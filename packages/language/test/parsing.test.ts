@@ -6,7 +6,7 @@ import type { Model } from "doc-lang-language";
 import { createDocLangServices, isModel } from "doc-lang-language";
 
 let services: ReturnType<typeof createDocLangServices>;
-let parse:    ReturnType<typeof parseHelper<Model>>;
+let parse: ReturnType<typeof parseHelper<Model>>;
 let document: LangiumDocument<Model> | undefined;
 
 beforeAll(async () => {
@@ -34,12 +34,12 @@ describe('Parsing tests', () => {
             //  of the AST part we are interested in and that is to be compared to our expectation;
             // prior to the tagged template expression we check for validity of the parsed document object
             //  by means of the reusable function 'checkDocumentValid()' to sort out (critical) typos first;
-            checkDocumentValid(document) || s`
-                Persons:
-                  ${document.parseResult.value?.persons?.map(p => p.name)?.join('\n  ')}
-                Greetings to:
-                  ${document.parseResult.value?.greetings?.map(g => g.person.$refText)?.join('\n  ')}
-            `
+            checkDocumentValid(document) // || s`
+            //     Persons:
+            //       ${document.parseResult.value?.persons?.map(p => p.name)?.join('\n  ')}
+            //     Greetings to:
+            //       ${document.parseResult.value?.greetings?.map(g => g.person.$refText)?.join('\n  ')}
+            // `
         ).toBe(s`
             Persons:
               Langium

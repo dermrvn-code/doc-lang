@@ -1,0 +1,14 @@
+Obj Logger{ 
+    name: string; 
+    id: int; 
+    log = Log;
+} 
+
+Obj Backend{
+    logger: Logger;
+} 
+
+Func Log{ 
+    message: string;
+    return: void;
+}
