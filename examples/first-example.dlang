@@ -1,14 +1,22 @@
+Sect "Example Section";
+
 Obj Logger{ 
+    "Core logging component of the system."
+    
     name: string; 
-    id: int; 
+    id: int = 0; 
     log = Log;
 } 
 
 Obj Backend{
+    "Main backend container object."
+
     logger: Logger;
 } 
 
 Func Log{ 
+    "Handles logging of messages."
+
     message: string;
     return: void;
 }
