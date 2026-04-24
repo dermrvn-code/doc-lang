@@ -1,0 +1,16 @@
+{
+    "projectName": "DocLang",
+    "languages": [
+        {
+            "id": "doc-lang",
+            "grammar": "src/doc-lang.langium",
+            "fileExtensions": [
+                "dlang"
+            ],
+            "textMate": {
+                "out": "syntaxes/doc-lang.tmLanguage.json"
+            }
+        }
+    ],
+    "out": "src/generated"
+}
