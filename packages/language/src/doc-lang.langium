@@ -43,13 +43,15 @@ Func:
     'Func' name=ID '{'
         description=Description?
         params+=Param*
-        returnType=Type?
+        returnType=ReturnType?
         code=CODE_BLOCK?
     '}';
 
 Param:
     name=ID ':' type=Type ';';
 
+ReturnType:
+    'return:' type=Type ';';
 
 /* -------------------- Field System -------------------- */
 
