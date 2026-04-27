@@ -1,34 +1,35 @@
-Sect "Example Section";
+Sect "Example Section"
 
 Obj Logger{ 
     "Core logging component of the system."
     
-    name: string; 
-    id: int = 0; 
-    log = Log;
+    name: string
+    id: int = 0
+    log = Log
 
     ```
-    Logger logger = new Logger();
+    Logger logger = new Logger()
     ```
 } 
 
 Obj Backend{
     "Main backend container object."
 
-    logger: Logger;
+    logger: Logger
+    
     ```
-    Backend backend = new Backend();
-    backend.logger.log("This is a log message.");
+    Backend backend = new Backend()
+    backend.logger.log("This is a log message.")
     ```
 } 
 
 Func Log{ 
     "Handles logging of messages."
 
-    message: string;
-    return: void;
+    message: string
+    return: void
 
     ```
-    logger.Log("This is a log message.");
+    logger.Log("This is a log message.")
     ```
 }

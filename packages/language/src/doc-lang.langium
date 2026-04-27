@@ -13,7 +13,7 @@ Entity:
 /* -------------------- Section -------------------- */
 
 Sect:
-    'Sect' text=STRING ';';
+    'Sect' text=STRING;
 
 /* ---------- General Entity Attributes ----------- */
 
@@ -28,14 +28,9 @@ UsageExample:
 Obj:
     'Obj' name=ID '{'
         description=Description?
-        members+=Member*
+        members+=Field*
         code=CODE_BLOCK?
     '}';
-
-Member:
-    Field ';';
-
-
 
 /* -------------------- Functions -------------------- */
 
@@ -48,10 +43,10 @@ Func:
     '}';
 
 Param:
-    name=ID ':' type=Type ';';
+    name=ID ':' type=Type;
 
 ReturnType:
-    'return:' type=Type ';';
+    'return:' type=Type;
 
 /* -------------------- Field System -------------------- */
 
