@@ -1,10 +1,16 @@
-# Example Section
+# Example Section {#01}
+
+- [Objects](#01-01)
+   - [Logger](#01-01-01)
+   - [Backend](#01-01-02)
+- [Functions](#01-02)
+   - [Log](#01-02-01)
 
 ---
 
-## Objects
+## Objects {#01-01}
 
-### `Logger`
+### `Logger` {#01-01-01}
 
 Core logging component of the system.
 
@@ -21,7 +27,7 @@ Logger logger = new Logger();
 
 ---
 
-### `Backend`
+### `Backend` {#01-01-02}
 
 Main backend container object.
 
@@ -36,9 +42,9 @@ backend.logger.log("This is a log message.");
 ```
 ---
 
-## Functions
+## Functions {#01-02}
 
-### `Log`
+### `Log` {#01-02-01}
 
 Handles logging of messages.
 
