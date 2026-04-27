@@ -37,13 +37,10 @@ Obj:
 Func:
     'Func' name=ID '{'
         description=Description?
-        params+=Param*
+        params+=Field*
         returnType=ReturnType?
         code=CODE_BLOCK?
     '}';
-
-Param:
-    name=ID ':' type=Type;
 
 ReturnType:
     'return:' type=Type;
