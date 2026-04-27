@@ -18,12 +18,15 @@ Core logging component of the system.
 
 - **name**: `string`
 - **id**: `int` = 0
-- **log**: `Func` = [`Log`](#log)
+- **Log**: `Func` = [`Log`](#01-02-01)
 
 **Usage**
 ```
 Logger logger = new Logger();
 ```
+
+**See also**
+[`Log`](#01-02-01) [`Backend`](#01-01-02) 
 
 ---
 
@@ -33,13 +36,17 @@ Main backend container object.
 
 **Fields**
 
-- **logger**: [`Logger`](#logger)
+- **logger**: [`Logger`](#01-01-01) = new Logger()
 
 **Usage**
 ```
 Backend backend = new Backend();
 backend.logger.log("This is a log message.");
 ```
+
+**See also**
+[`Logger`](#01-01-01)
+
 ---
 
 ## Functions {#01-02}
@@ -57,3 +64,6 @@ Handles logging of messages.
 ```
 logger.Log("This is a log message.");
 ```
+
+**See also**
+[`Logger`](#01-01-01)
