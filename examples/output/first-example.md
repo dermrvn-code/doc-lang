@@ -14,9 +14,14 @@ Core logging component of the system.
 - **id**: `int` = 0
 - **log**: `Func` = [`Log`](#log)
 
+**Usage**
+```
+Logger logger = new Logger();
+```
+
 ---
 
-### Backend
+### `Backend`
 
 Main backend container object.
 
@@ -24,15 +29,25 @@ Main backend container object.
 
 - **logger**: [`Logger`](#logger)
 
+**Usage**
+```
+Backend backend = new Backend();
+backend.logger.log("This is a log message.");
+```
 ---
 
 ## Functions
 
-### Log
+### `Log`
 
 Handles logging of messages.
 
 **Parameters**
 - **message**: `string`
 
-**Return**: `void`
+**Returns**: `void`
+
+**Usage**
+```
+logger.Log("This is a log message.");
+```

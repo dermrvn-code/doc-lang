@@ -6,12 +6,20 @@ Obj Logger{
     name: string; 
     id: int = 0; 
     log = Log;
+
+    ```
+    Logger logger = new Logger();
+    ```
 } 
 
 Obj Backend{
     "Main backend container object."
 
     logger: Logger;
+    ```
+    Backend backend = new Backend();
+    backend.logger.log("This is a log message.");
+    ```
 } 
 
 Func Log{ 
@@ -19,4 +27,8 @@ Func Log{
 
     message: string;
     return: void;
+
+    ```
+    logger.Log("This is a log message.");
+    ```
 }
