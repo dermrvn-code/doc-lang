@@ -1,10 +1,37 @@
 # Example Section {#01}
 
+- [Class Diagram](#01-00)
 - [Objects](#01-01)
    - [Logger](#01-01-01)
    - [Backend](#01-01-02)
 - [Functions](#01-02)
    - [Log](#01-02-01)
+
+---
+
+## Class Diagram {#01-00}
+
+```mermaid
+classDiagram
+direction LR
+
+class Backend {
+  +Logger logger
+}
+
+class Logger {
+  +string name
+  +int id = 0
+  +Func Log
+}
+
+class Log {
+  +void Log(string message)
+}
+
+Backend --> Logger : contains
+Logger --> Log : uses
+```
 
 ---
 
