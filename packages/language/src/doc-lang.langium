@@ -1,6 +1,8 @@
 grammar DocLang
 
 entry Model:
+    proj=Proj
+    desc=Descr?
     elements+=Element*;
 
 Element:
@@ -9,6 +11,13 @@ Element:
 Entity:
     Obj | Func;
 
+/* ----------------- Document Header --------------- */
+
+Proj:
+    'Proj' text=STRING;
+
+Descr:
+    'Descr' text=STRING;
 
 /* -------------------- Section -------------------- */
 

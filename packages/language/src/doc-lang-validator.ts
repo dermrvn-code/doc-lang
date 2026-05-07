@@ -1,5 +1,5 @@
 import type { ValidationAcceptor, ValidationChecks } from 'langium';
-import { Description, Entity, Field, Func, Sect, type DocLangAstType } from './generated/ast.js';
+import { Description, Entity, Field, Func, Proj, Sect, type DocLangAstType } from './generated/ast.js';
 import type { DocLangServices } from './doc-lang-module.js';
 
 /**
@@ -9,10 +9,11 @@ export function registerValidationChecks(services: DocLangServices) {
     const registry = services.validation.ValidationRegistry;
     const validator = services.validation.DocLangValidator;
     const checks: ValidationChecks<DocLangAstType> = {
+        Proj: validator.checkProjectNameOnlyOneLine,
         Sect: validator.checkSectionNamingConvention,
         Func: validator.checkFunctionHasReturnType,
         Entity: validator.checkEntityNamingConvention,
-        Description: validator.checkDescriptionOnlyOneLine,
+        Description: validator.checkEntityDescriptionOnlyOneLine,
         Field: validator.checkFieldNamingConvention
     };
     registry.register(checks, validator);
@@ -31,8 +32,14 @@ export class DocLangValidator {
     }
 
     // Warning
-    checkDescriptionOnlyOneLine(description: Description, accept: ValidationAcceptor): void {
-        if (!this._checkOneLineString(description.text)) {
+    checkProjectNameOnlyOneLine(proj: Proj, accept: ValidationAcceptor): void {
+        if (proj.text && !this._checkOneLineString(proj.text)) {
+            accept('warning', 'Project name should be only one line.', { node: proj });
+        }
+    }
+
+    checkEntityDescriptionOnlyOneLine(description: Description, accept: ValidationAcceptor): void {
+        if (description.text && !this._checkOneLineString(description.text)) {
             accept('warning', 'Description should be only one line.', { node: description });
         }
     }
