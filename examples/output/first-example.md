@@ -9,7 +9,9 @@
 
 ---
 
-## Class Diagram {#01-00}
+## Diagrams {#01-00}
+
+### Class Diagram {#01-00-01}
 
 ```mermaid
 classDiagram
@@ -31,6 +33,19 @@ class Log {
 
 Backend --> Logger : contains
 Logger --> Log : uses
+```
+
+## Dependency Diagram {#01-00-02}
+
+```mermaid
+graph LR
+
+Backend["Backend"]
+Logger["Logger"]
+Log["Log Function"]
+
+Backend -->|"depends on"| Logger
+Logger -->|"depends on"| Log
 ```
 
 ---
