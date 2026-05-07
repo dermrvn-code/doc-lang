@@ -1,17 +1,19 @@
-# Example Section {#01}
+# Wiki Page for "Example Project"
 
-- [Class Diagram](#01-00)
-- [Objects](#01-01)
-   - [Logger](#01-01-01)
-   - [Backend](#01-01-02)
-- [Functions](#01-02)
-   - [Log](#01-02-01)
+Here will be the documentation for the "Example Project".
 
----
+## Table of Contents
 
-## Diagrams {#01-00}
+- [Diagrams](#00)
+  - [Class Diagram](#00-01)
+  - [Dependency Diagram](#00-02)
+- [Example Section](#01)
 
-### Class Diagram {#01-00-01}
+--
+
+## Diagrams {#00}
+
+### Class Diagram {#00-01}
 
 ```mermaid
 classDiagram
@@ -35,7 +37,7 @@ Backend --> Logger : contains
 Logger --> Log : uses
 ```
 
-## Dependency Diagram {#01-00-02}
+## Dependency Diagram {#00-02}
 
 ```mermaid
 graph LR
@@ -50,9 +52,19 @@ Logger -->|"depends on"| Log
 
 ---
 
-## Objects {#01-01}
+## Example Section {#01}
 
-### `Logger` {#01-01-01}
+- [Objects](#01-01)
+   - [Logger](#01-01-01)
+   - [Backend](#01-01-02)
+- [Functions](#01-02)
+   - [Log](#01-02-01)
+
+---
+
+### Objects {#01-01}
+
+#### `Logger` {#01-01-01}
 
 Core logging component of the system.
 
@@ -72,7 +84,7 @@ Logger logger = new Logger();
 
 ---
 
-### `Backend` {#01-01-02}
+#### `Backend` {#01-01-02}
 
 Main backend container object.
 
@@ -90,10 +102,9 @@ backend.logger.log("This is a log message.");
 [`Logger`](#01-01-01)
 
 ---
+### Functions {#01-02}
 
-## Functions {#01-02}
-
-### `Log` {#01-02-01}
+#### `Log` {#01-02-01}
 
 Handles logging of messages.
 

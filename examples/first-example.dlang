@@ -1,3 +1,6 @@
+Proj "Example Project"
+Descr "Here will be the documentation for the 'Example Project'. "
+
 Sect "Example Section"
 
 Obj Logger{ 
