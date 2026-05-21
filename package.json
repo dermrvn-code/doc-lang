@@ -11,16 +11,20 @@
         "build:clean": "npm run clean && npm run build",
         "langium:generate": "npm run --workspace packages/language langium:generate",
         "langium:watch": "npm run --workspace packages/language langium:watch",
+        "dev": "npm run --workspace packages/web dev",
         "test": "npm run --workspace packages/language test"
     },
     "devDependencies": {
         "@types/node": "~20.17.48",
         "shx": "~0.4.0",
-        "typescript": "~5.8.3"
+        "typescript": "~5.8.3",
+        "@codingame/esbuild-import-meta-url-plugin": "~1.0.3",
+        "@codingame/monaco-vscode-rollup-vsix-plugin": "^23.0.0"
     },
     "workspaces": [
         "packages/language",
         "packages/cli",
-        "packages/extension"
+        "packages/extension",
+        "packages/web"
     ]
 }

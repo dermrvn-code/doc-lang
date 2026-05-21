@@ -1,0 +1,23 @@
+{
+  "name": "doc-lang-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "shx rm -fr dist",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "doc-lang-language": "0.0.1",
+    "@codingame/monaco-vscode-editor-api": "^25.1.2",
+    "@codingame/monaco-vscode-keybindings-service-override": "~25.1.2",
+    "monaco-languageclient": "~10.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "~20.17.48",
+    "typescript": "~5.8.3",
+    "vite": "~6.4.2",
+    "@viz-js/viz": "~3.27.0"
+  }
+}

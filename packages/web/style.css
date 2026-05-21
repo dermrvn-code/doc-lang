@@ -1,0 +1,27 @@
+body {
+    font-family: Helvetica, Arial, Sans-Serif;
+    background-color: #1f1f1f;
+    color: #cccccc;
+}
+
+
+.vertical-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Full viewport height */
+}
+
+.horizontal-container {
+  display: flex;
+  flex: 1; /* Take equal space */
+        justify-content: center;
+  padding: 10px;
+}
+.left-side {
+  flex: 1; /* Take equal space */
+  padding: 10px;
+}
+.right-side {
+  flex: 2; /* Take equal space */
+  padding: 10px;
+}
