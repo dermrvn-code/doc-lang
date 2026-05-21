@@ -2,38 +2,61 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DocLang Web</title>
-    <meta name="description" content="Web-Intergration Showcase" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <title>DocLang Studio</title>
+
+    <meta
+      name="description"
+      content="DSL to Markdown editor"
+    />
+
     <link rel="stylesheet" href="./style.css" />
   </head>
+
   <body>
+
     <script type="module">
       import { runDsl } from "./src/main.ts";
       runDsl();
     </script>
-    <div>
-      <b>DocLang Web Playground</b>
-      <br />
-      <button type="button" id="button-update">Update</button>
-    </div>
-    <div class="horizontal-container">
-      <div class="left-side">
-        <div id="monaco-editor-root" style="height: 100vh"></div>
+
+    <header class="topbar">
+
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <span>DocLang Studio</span>
       </div>
-      <div class="right-side">
-        <div class="vertical-container">
-          <br />
-          <b>Summary:</b>
-          <br />
-          <div id="summary" style="height: 50vh"></div>
-          <br />
-          <b>Class Diagram:</b>
-          <br />
-          <div id="class-diagram" style="height: 50vh"></div>
-          <br />
+
+      <button id="button-update">
+        Render
+      </button>
+
+    </header>
+
+    <main class="workspace">
+
+      <section class="panel editor-panel">
+        <div class="panel-header">
+          DocLang Input
         </div>
-      </div>
-    </div>
+
+        <div id="monaco-editor-root"></div>
+      </section>
+
+      <section class="panel preview-panel">
+        <div class="panel-header">
+          Markdown Preview
+        </div>
+
+        <div id="markdown-preview"></div>
+      </section>
+
+    </main>
+
   </body>
 </html>
