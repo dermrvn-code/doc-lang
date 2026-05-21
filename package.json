@@ -15,16 +15,20 @@
         "test": "npm run --workspace packages/language test"
     },
     "devDependencies": {
+        "@codingame/esbuild-import-meta-url-plugin": "~1.0.3",
+        "@codingame/monaco-vscode-rollup-vsix-plugin": "^23.0.0",
         "@types/node": "~20.17.48",
         "shx": "~0.4.0",
-        "typescript": "~5.8.3",
-        "@codingame/esbuild-import-meta-url-plugin": "~1.0.3",
-        "@codingame/monaco-vscode-rollup-vsix-plugin": "^23.0.0"
+        "typescript": "~5.8.3"
     },
     "workspaces": [
         "packages/language",
         "packages/cli",
         "packages/extension",
         "packages/web"
-    ]
+    ],
+    "dependencies": {
+        "markdown-it": "^14.1.1",
+        "markdown-it-attrs": "^4.5.0"
+    }
 }

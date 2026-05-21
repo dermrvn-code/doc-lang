@@ -39,7 +39,7 @@ export const setupDslClient = async (): Promise<OverallAppConfig> => {
     },
     userConfiguration: {
       json: JSON.stringify({
-        'workbench.colorTheme': 'Default Light Modern',
+        'workbench.colorTheme': 'Default Dark Modern',
         'editor.guides.bracketPairsHorizontal': 'active',
         'editor.lightbulb.enabled': 'On',
         'editor.wordBasedSuggestions': 'off',
