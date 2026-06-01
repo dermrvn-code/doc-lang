@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <title>DocLang Studio</title>
+
+    <meta
+      name="description"
+      content="DSL to Markdown editor"
+    />
+
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+
+    <script type="module">
+      import { runDsl } from "./src/main.ts";
+      runDsl();
+    </script>
+
+    <header class="topbar">
+
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <span>DocLang Studio</span>
+      </div>
+
+      <button id="button-update">
+        Render
+      </button>
+
+    </header>
+
+    <main class="workspace">
+
+      <section class="panel editor-panel">
+        <div class="panel-header">
+          DocLang Input
+        </div>
+
+        <div id="monaco-editor-root"></div>
+      </section>
+
+      <section class="panel preview-panel">
+        <div class="panel-header">
+          Markdown Preview
+        </div>
+
+        <div id="markdown-preview"></div>
+      </section>
+
+    </main>
+
+  </body>
+</html>
