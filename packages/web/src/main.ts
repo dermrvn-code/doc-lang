@@ -1,5 +1,6 @@
 import MarkdownIt from "markdown-it";
 import markdownItAttrs from "markdown-it-attrs";
+import mermaid from "mermaid";
 
 import {
   startMonacoEditor,
@@ -11,25 +12,74 @@ const md = new MarkdownIt({
   linkify: true,
   typographer: true,
 });
+
 md.use(markdownItAttrs);
 
+mermaid.initialize({
+  startOnLoad: false,
+  securityLevel: "loose",
+});
+
+// Render Mermaid code fences as Mermaid divs
+const defaultFence = md.renderer.rules.fence;
+
+md.renderer.rules.fence = (
+  tokens,
+  idx,
+  options,
+  env,
+  self,
+) => {
+  const token = tokens[idx];
+
+  if (token.info.trim() === "mermaid") {
+    return `
+<div class="mermaid">
+${token.content}
+</div>
+`;
+  }
+
+  return defaultFence
+    ? defaultFence(
+      tokens,
+      idx,
+      options,
+      env,
+      self,
+    )
+    : self.renderToken(
+      tokens,
+      idx,
+      options,
+    );
+};
+
 const update = () => {
-  updateMarkdown();
+  void updateMarkdown();
 };
 
 const updateMarkdown = async () => {
   const mdelem =
     document.getElementById("markdown-preview");
 
-  if (mdelem != null) {
-    const code = getCurrentCode();
-
-    const finalMD = dummyMD;
-
-    mdelem.innerHTML = md.render(finalMD);
+  if (mdelem == null) {
+    return;
   }
-};
 
+  const code = getCurrentCode();
+
+  // TODO: Replace with generated Markdown from DSL
+  const finalMD = dummyMD;
+
+  mdelem.innerHTML = md.render(finalMD);
+
+  await mermaid.run({
+    nodes: Array.from(
+      mdelem.querySelectorAll(".mermaid"),
+    ),
+  });
+};
 
 export const runDsl = async () => {
   try {
@@ -43,6 +93,7 @@ export const runDsl = async () => {
       .getElementById("button-update")
       ?.addEventListener("click", update);
 
+    await updateMarkdown();
   } catch (e) {
     console.error(e);
   }
@@ -131,7 +182,7 @@ Logger logger = new Logger();
 \`\`\`
 
 **See also**
-[\`Log\`](#01-02-01) [\`Backend\`](#01-01-02) 
+[\`Log\`](#01-02-01) [\`Backend\`](#01-01-02)
 
 ---
 
