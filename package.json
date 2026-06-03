@@ -31,6 +31,7 @@
     "dependencies": {
         "markdown-it": "^14.1.1",
         "markdown-it-attrs": "^4.5.0",
-        "mermaid": "^11.15.0"
+        "mermaid": "^11.15.0",
+        "vitest": "^4.1.8"
     }
 }

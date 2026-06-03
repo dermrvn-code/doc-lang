@@ -1,53 +1,136 @@
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
-import { EmptyFileSystem, type LangiumDocument } from "langium";
-import { expandToString as s } from "langium/generate";
-import { clearDocuments, parseHelper } from "langium/test";
-import type { Model } from "doc-lang-language";
-import { createDocLangServices, isModel } from "doc-lang-language";
+import { afterEach, beforeAll, describe, expect, test } from 'vitest';
+import { EmptyFileSystem, type LangiumDocument } from 'langium';
+import { clearDocuments, parseHelper } from 'langium/test';
+
+import type {
+    Model,
+    Obj,
+    ObjectType,
+    Func,
+    Ref
+} from 'doc-lang-language';
+
+import {
+    createDocLangServices
+} from 'doc-lang-language';
 
 let services: ReturnType<typeof createDocLangServices>;
 let parse: ReturnType<typeof parseHelper<Model>>;
 let document: LangiumDocument<Model> | undefined;
 
-beforeAll(async () => {
+beforeAll(() => {
     services = createDocLangServices(EmptyFileSystem);
     parse = parseHelper<Model>(services.DocLang);
-
-    // activate the following if your linking test requires elements from a built-in library, for example
-    // await services.shared.workspace.WorkspaceManager.initializeWorkspace([]);
 });
 
-afterEach(async () => {
-    document && clearDocuments(services.shared, [document]);
+afterEach(() => {
+    if (document) {
+        clearDocuments(services.shared, [document]);
+    }
 });
 
 describe('Linking tests', () => {
 
-    test('linking of greetings', async () => {
+    test('links object type reference to actual Obj node', async () => {
         document = await parse(`
-            person Langium
-            Hello Langium!
+            Proj "Test"
+
+            Obj Person {}
+
+            Obj Company {
+                owner: Person
+            }
         `);
 
-        expect(
-            // here we first check for validity of the parsed document object by means of the reusable function
-            //  'checkDocumentValid()' to sort out (critical) typos first,
-            // and then evaluate the cross references we're interested in by checking
-            //  the referenced AST element as well as for a potential error message;
-            checkDocumentValid(document)
-            // || document.parseResult.value.greetings.map(g => g.person.ref?.name || g.person.error?.message).join('\n')
-        ).toBe(s`
-            Langium
+        const model = document.parseResult.value;
+
+        const person = model.elements[0] as Obj;
+        const company = model.elements[1] as Obj;
+
+        const ownerType = company.members[0].type as ObjectType;
+
+        expect(ownerType.ref.ref).toBe(person);
+    });
+
+    test('links field value reference to actual Obj node', async () => {
+        document = await parse(`
+            Proj "Test"
+
+            Obj Person {}
+
+            Obj Company {
+                owner = Person
+            }
         `);
+
+        const model = document.parseResult.value;
+
+        const person = model.elements[0] as Obj;
+        const company = model.elements[1] as Obj;
+
+        const ownerValue = company.members[0].value as Ref;
+
+        expect(ownerValue.ref.ref).toBe(person);
+    });
+
+    test('links function reference from object field', async () => {
+        document = await parse(`
+            Proj "Test"
+
+            Func greet {}
+
+            Obj Example {
+                callback = greet
+            }
+        `);
+
+        const model = document.parseResult.value;
+
+        const greet = model.elements[0] as Func;
+        const example = model.elements[1] as Obj;
+
+        const callback = example.members[0].value as Ref;
+
+        expect(callback.ref.ref).toBe(greet);
+    });
+
+    test('fails to link unknown object type', async () => {
+        document = await parse(`
+            Proj "Test"
+
+            Obj Company {
+                owner: UnknownType
+            }
+        `);
+
+        const model = document.parseResult.value;
+
+        const company = model.elements[0] as Obj;
+
+        const ownerType = company.members[0].type as ObjectType;
+
+        expect(ownerType.ref.ref).toBeUndefined();
+        expect(ownerType.ref.error).toBeDefined();
+        expect(ownerType.ref.error?.message).toContain('UnknownType');
+    });
+
+    test('fails to link unknown value reference', async () => {
+        document = await parse(`
+            Proj "Test"
+
+            Obj Company {
+                owner = UnknownEntity
+            }
+        `);
+
+        const model = document.parseResult.value;
+
+        const company = model.elements[0] as Obj;
+
+        const ownerValue = company.members[0].value as Ref;
+
+        expect(ownerValue.ref.ref).toBeUndefined();
+        expect(ownerValue.ref.error).toBeDefined();
+        expect(ownerValue.ref.error?.message).toContain('UnknownEntity');
     });
 });
-
-function checkDocumentValid(document: LangiumDocument): string | undefined {
-    return document.parseResult.parserErrors.length && s`
-        Parser errors:
-          ${document.parseResult.parserErrors.map(e => e.message).join('\n  ')}
-    `
-        || document.parseResult.value === undefined && `ParseResult is 'undefined'.`
-        || !isModel(document.parseResult.value) && `Root AST object is a ${document.parseResult.value.$type}, expected a 'Model'.`
-        || undefined;
-}

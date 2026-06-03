@@ -1,66 +1,188 @@
 import { beforeAll, describe, expect, test } from "vitest";
 import { EmptyFileSystem, type LangiumDocument } from "langium";
-import { expandToString as s } from "langium/generate";
 import { parseHelper } from "langium/test";
 import type { Diagnostic } from "vscode-languageserver-types";
 import type { Model } from "doc-lang-language";
-import { createDocLangServices, isModel } from "doc-lang-language";
+import { createDocLangServices } from "doc-lang-language";
 
-let services: ReturnType<typeof createDocLangServices>;
-let parse:    ReturnType<typeof parseHelper<Model>>;
-let document: LangiumDocument<Model> | undefined;
+let parse: ReturnType<typeof parseHelper<Model>>;
 
-beforeAll(async () => {
-    services = createDocLangServices(EmptyFileSystem);
-    const doParse = parseHelper<Model>(services.DocLang);
-    parse = (input: string) => doParse(input, { validation: true });
-
-    // activate the following if your linking test requires elements from a built-in library, for example
-    // await services.shared.workspace.WorkspaceManager.initializeWorkspace([]);
+beforeAll(() => {
+    const services = createDocLangServices(EmptyFileSystem);
+    parse = parseHelper<Model>(services.DocLang);
 });
 
-describe('Validating', () => {
+/**
+ * Extract diagnostics from a parsed document
+ */
+function getDiagnostics(doc: LangiumDocument<Model>): Diagnostic[] {
+    return doc.diagnostics ?? [];
+}
 
-    test('check no errors', async () => {
-        document = await parse(`
-            person Langium
+/**
+ * Helper: parse + return diagnostics only
+ */
+async function validate(input: string): Promise<Diagnostic[]> {
+    const doc = await parse(input, { validation: true });
+    return getDiagnostics(doc);
+}
+
+/**
+ * Helper: match diagnostic by message substring
+ */
+function hasDiagnostic(diags: Diagnostic[], messagePart: string) {
+    return diags.some(d => d.message.includes(messagePart));
+}
+
+/* -------------------------------------------------
+   Project / Section / Description rules
+-------------------------------------------------- */
+
+describe("Project / Section / Description validation", () => {
+
+    test("valid single-line project, section, description produces no diagnostics", async () => {
+        const diags = await validate(`
+            Proj "MyProject"
+            Sect "Main Section"
+
+            Obj TestObj {
+                "Simple description"
+            }
         `);
 
-        expect(
-            // here we first check for validity of the parsed document object by means of the reusable function
-            //  'checkDocumentValid()' to sort out (critical) typos first,
-            // and then evaluate the diagnostics by converting them into human readable strings;
-            // note that 'toHaveLength()' works for arrays and strings alike ;-)
-            checkDocumentValid(document) || document?.diagnostics?.map(diagnosticToString)?.join('\n')
-        ).toHaveLength(0);
+        expect(diags).toHaveLength(0);
     });
 
-    test('check capital letter validation', async () => {
-        document = await parse(`
-            person langium
+    test("multiline project text produces warning", async () => {
+        const diags = await validate(`
+            Proj "My
+Project"
         `);
 
-        expect(
-            checkDocumentValid(document) || document?.diagnostics?.map(diagnosticToString)?.join('\n')
-        ).toEqual(
-            // 'expect.stringContaining()' makes our test robust against future additions of further validation rules
-            expect.stringContaining(s`
-                [1:19..1:26]: Person name should start with a capital.
-            `)
+        expect(hasDiagnostic(diags, "Project name should be only one line.")).toBe(true);
+    });
+
+    test("multiline section text produces error", async () => {
+        const diags = await validate(`
+            Sect "Bad
+Section"
+        `);
+
+        expect(hasDiagnostic(diags, "Section text can be only one line.")).toBe(true);
+    });
+
+    test("multiline description produces warning", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj A {
+                "line1
+line2"
+            }
+        `);
+        expect(hasDiagnostic(diags, "Description should be only one line.")).toBe(true);
+    });
+});
+
+/* -------------------------------------------------
+   Function validation
+-------------------------------------------------- */
+
+describe("Function validation", () => {
+
+    test("function without return type produces warning", async () => {
+        const diags = await validate(`
+            Func MyFunc {
+                description "test"
+            }
+        `);
+
+        expect(hasDiagnostic(diags, "Function should have a return type")).toBe(true);
+    });
+
+    test("function with return type is valid", async () => {
+        const diags = await validate(`
+            Func MyFunc {
+                return: int
+            }
+        `);
+
+        expect(hasDiagnostic(diags, "Function should have a return type")).toBe(false);
+    });
+});
+
+/* -------------------------------------------------
+   Naming conventions
+-------------------------------------------------- */
+
+describe("Naming conventions", () => {
+
+    test("entity name must be UpperCamelCase", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj badName {
+            }
+        `);
+
+        expect(hasDiagnostic(diags, "Entity name should be in upper camelCase.")).toBe(true);
+    });
+
+    test("field name must be lowerCamelCase", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj Test {
+                BadField: string
+            }
+        `);
+
+        expect(hasDiagnostic(diags, "Field name should be in lowerCamelCase.")).toBe(true);
+    });
+
+    test("valid naming produces no naming diagnostics", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj GoodName {
+                goodField: string
+            }
+        `);
+
+        const namingIssues = diags.filter(d =>
+            d.message.includes("camelCase")
         );
+
+        expect(namingIssues).toHaveLength(0);
     });
 });
 
-function checkDocumentValid(document: LangiumDocument): string | undefined {
-    return document.parseResult.parserErrors.length && s`
-        Parser errors:
-          ${document.parseResult.parserErrors.map(e => e.message).join('\n  ')}
-    `
-        || document.parseResult.value === undefined && `ParseResult is 'undefined'.`
-        || !isModel(document.parseResult.value) && `Root AST object is a ${document.parseResult.value.$type}, expected a 'Model'.`
-        || undefined;
-}
+/* -------------------------------------------------
+   Combined / realistic scenario
+-------------------------------------------------- */
 
-function diagnosticToString(d: Diagnostic) {
-    return `[${d.range.start.line}:${d.range.start.character}..${d.range.end.line}:${d.range.end.character}]: ${d.message}`;
-}
+describe("Combined validation scenarios", () => {
+
+    test("multiple violations are all reported", async () => {
+        const diags = await validate(`
+            Proj "Bad
+Project"
+
+            Sect "Bad
+Section"
+
+            Func badFunc {
+                BadField: string
+            }
+
+            Obj badObj {
+            }
+        `);
+
+        expect(hasDiagnostic(diags, "Project name should be only one line.")).toBe(true);
+        expect(hasDiagnostic(diags, "Section text can be only one line.")).toBe(true);
+        expect(hasDiagnostic(diags, "Function should have a return type")).toBe(true);
+        expect(hasDiagnostic(diags, "Field name should be in lowerCamelCase.")).toBe(true);
+        expect(hasDiagnostic(diags, "Entity name should be in upper camelCase.")).toBe(true);
+    });
+});

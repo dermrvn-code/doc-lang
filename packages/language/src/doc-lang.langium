@@ -70,17 +70,20 @@ FieldValue:
 Ref:
     ref=[Entity:ID];
 
-Literal returns string:
-    STRING | INT;
+Literal:
+    value=(STRING | INT);
 
 
 /* -------------------- Types -------------------- */
 
 Type:
-    PrimitiveType | ref=[Obj:ID];
+    PrimitiveType | ObjectType;
 
-PrimitiveType returns string:
-    'string' | 'int' | 'void';
+PrimitiveType:
+    primitive=('string' | 'int' | 'void');
+
+ObjectType:
+    ref=[Obj:ID];
 
 
 /* -------------------- Terminals -------------------- */
