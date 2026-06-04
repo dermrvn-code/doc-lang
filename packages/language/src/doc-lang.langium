@@ -58,29 +58,20 @@ Field:
         ':' type=Type
     )?
     (
-        '=' value=FieldValue
+        '=' value=(STRING | INT)
     )?;
-
-FieldValue:
-    Ref | Literal;
-
-Ref:
-    ref=[Entity:ID];
-
-Literal:
-    value=(STRING | INT);
 
 
 /* -------------------- Types -------------------- */
 
 Type:
-    PrimitiveType | ObjectType;
+    PrimitiveType | EntityType;
 
 PrimitiveType:
     primitive=('string' | 'int' | 'void');
 
-ObjectType:
-    ref=[Obj:ID];
+EntityType:
+    ref=[Entity:ID];
 
 
 /* -------------------- Terminals -------------------- */

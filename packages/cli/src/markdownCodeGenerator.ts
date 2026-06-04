@@ -148,7 +148,7 @@ export function generateType(type: DlangType): string {
 
     if (type.kind === "primitive") {
         markdown += `\`${type.name}\``;
-    } else if (type.kind === "object") {
+    } else if (type.kind === "entity") {
         markdown += `\`${type.name}\``;
     }
 
@@ -169,7 +169,7 @@ export function generateField(field: DlangField): string {
         if (field.type?.kind === "primitive") {
             markdown += ` = ${field.value}`;
 
-        } else if (field.type?.kind === "object" || field.type?.kind === "function") {
+        } else if (field.type?.kind === "entity") {
             // TODO: linking
 
             markdown += ` = [\`${field.value}\`]()`;

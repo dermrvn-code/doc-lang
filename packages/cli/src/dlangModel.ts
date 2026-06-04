@@ -1,4 +1,4 @@
-import { Field, FieldValue, Func, Model, Obj, Type } from "doc-lang-language";
+import { Field, Func, Model, Obj, Type } from "doc-lang-language";
 
 /* =========================
    Core Dlang Types
@@ -44,8 +44,7 @@ export type DlangFunction = DlangEntity & {
 
 export type DlangType =
     | { kind: "primitive"; name: string }
-    | { kind: "object"; name: string }
-    | { kind: "function" }
+    | { kind: "entity"; name: string }
     | { kind: "unknown" };
 
 /* =========================
@@ -176,7 +175,7 @@ function toField(node: Field): DlangField {
     return {
         name: node.name,
         type: resolveType(node.type, node.value),
-        value: resolveValue(node.value),
+        value: node.value,
     };
 }
 
@@ -185,8 +184,8 @@ function toField(node: Field): DlangField {
 ========================= */
 
 /** Resolve declared or inferred type */
-function resolveType(type?: Type, value?: FieldValue): DlangType | undefined {
-    return resolveDeclaredType(type) ?? inferType(value);
+function resolveType(type?: Type, value?: string): DlangType | undefined {
+    return resolveDeclaredType(type);
 }
 
 /** Convert explicit AST type */
@@ -197,38 +196,8 @@ function resolveDeclaredType(type?: Type): DlangType | undefined {
         case "PrimitiveType":
             return { kind: "primitive", name: type.primitive };
 
-        case "ObjectType":
-            return { kind: "object", name: unwrap(type.ref).name };
-
-        default:
-            return;
-    }
-}
-
-/** Infer type from value (best-effort) */
-function inferType(value?: FieldValue): DlangType | undefined {
-    if (value == undefined || value.$type !== "Ref") return;
-
-    const ref = unwrap(value.ref);
-    return ref.$type === "Func"
-        ? { kind: "function" }
-        : { kind: "unknown" };
-}
-
-/* =========================
-   Value Resolution
-========================= */
-
-/** Convert field value → string representation */
-function resolveValue(value?: FieldValue): string | undefined {
-    if (value == undefined) return;
-
-    switch (value.$type) {
-        case "Literal":
-            return value.value;
-
-        case "Ref":
-            return unwrap(value.ref).name;
+        case "EntityType":
+            return { kind: "entity", name: unwrap(type.ref).name };
 
         default:
             return;
