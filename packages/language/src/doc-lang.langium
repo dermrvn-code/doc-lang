@@ -29,27 +29,24 @@ Sect:
 Description:
     text=STRING;
 
-UsageExample:
-    code=CODE_BLOCK;
-
 /* -------------------- Object -------------------- */
 
 Obj:
-    'Obj' name=ID '{'
+    'Obj' name=ID
         description=Description?
         members+=Field*
         code=CODE_BLOCK?
-    '}';
+    ;
 
 /* -------------------- Functions -------------------- */
 
 Func:
-    'Func' name=ID '{'
+    'Func' name=ID
         description=Description?
         params+=Field*
         returnType=ReturnType?
         code=CODE_BLOCK?
-    '}';
+    ;
 
 ReturnType:
     'return:' type=Type;
