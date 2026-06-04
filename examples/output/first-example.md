@@ -9,7 +9,7 @@ Here will be the documentation for the "Example Project".
   - [Dependency Diagram](#00-02)
 - [Example Section](#01)
 
---
+---
 
 ## Diagrams {#00}
 

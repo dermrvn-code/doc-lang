@@ -3,7 +3,9 @@
     "compilerOptions": {
         "rootDir": "src",
         "outDir": "out",
-        "declarationDir": "out"
+        "declarationDir": "out",
+
+        "types": ["node"]
     },
     "references": [
         {

@@ -9,3 +9,6 @@ out/
 syntaxes/
 *.tsbuildinfo
 *.vsix
+
+# Ignore generated files from the parser
+**/generated/

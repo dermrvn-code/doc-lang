@@ -13,7 +13,7 @@
         "src"
     ],
     "bin": {
-        "doc-lang-cli": "./bin/cli.js"
+        "doc-lang": "./bin/cli.js"
     },
     "scripts": {
         "clean": "shx rm -fr *.tsbuildinfo out",

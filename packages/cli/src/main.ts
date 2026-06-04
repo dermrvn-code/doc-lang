@@ -1,40 +1,60 @@
 import type { Model } from 'doc-lang-language';
-import { createDocLangServices, DocLangLanguageMetaData } from 'doc-lang-language';
-import chalk from 'chalk';
+import { createDocLangServices } from 'doc-lang-language';
+
 import { Command } from 'commander';
+import chalk from 'chalk';
+
 import { extractAstNode } from './util.js';
-import { generateJavaScript } from './generator.js';
+import { generateMarkdown } from './generator.js';
+
 import { NodeFileSystem } from 'langium/node';
-import * as url from 'node:url';
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
-
-const packagePath = path.resolve(__dirname, '..', 'package.json');
-const packageContent = await fs.readFile(packagePath, 'utf-8');
-
-export const generateAction = async (fileName: string, opts: GenerateOptions): Promise<void> => {
-    const services = createDocLangServices(NodeFileSystem).DocLang;
-    const model = await extractAstNode<Model>(fileName, services);
-    const generatedFilePath = generateJavaScript(model, fileName, opts.destination);
-    console.log(chalk.green(`JavaScript code generated successfully: ${generatedFilePath}`));
-};
 
 export type GenerateOptions = {
     destination?: string;
+};
+
+export async function generateAction(
+    file: string,
+    options: GenerateOptions
+): Promise<void> {
+    try {
+        const services = createDocLangServices(NodeFileSystem).DocLang;
+
+        const model = await extractAstNode<Model>(file, services);
+
+        const outputPath = generateMarkdown(
+            model,
+            file,
+            options.destination
+        );
+
+        console.log(
+            chalk.green(`Generation completed: ${outputPath}`)
+        );
+    } catch (err) {
+        console.error(
+            chalk.red(`Generation failed:`),
+            err
+        );
+        process.exit(1);
+    }
 }
 
-export default function(): void {
+export default function main(): void {
     const program = new Command();
 
-    program.version(JSON.parse(packageContent).version);
+    program
+        .name('doc-lang')
+        .description('DSL toolchain for structured documentation generation')
+        .version('0.1.0');
 
-    const fileExtensions = DocLangLanguageMetaData.fileExtensions.join(', ');
     program
         .command('generate')
-        .argument('<file>', `source file (possible file extensions: ${fileExtensions})`)
-        .option('-d, --destination <dir>', 'destination directory of generating')
-        .description('generates JavaScript code that prints "Hello, {name}!" for each greeting in a source file')
+        .argument('<file>', 'DSL source file')
+        .option(
+            '-d, --destination <dir>',
+            'output directory'
+        )
         .action(generateAction);
 
     program.parse(process.argv);
