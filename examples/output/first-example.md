@@ -90,7 +90,7 @@ Main backend container object.
 
 **Fields**
 
-- **logger**: [`Logger`](#01-01-01) = new Logger()
+- **logger**: [`Logger`](#01-01-01)
 
 **Usage**
 ```

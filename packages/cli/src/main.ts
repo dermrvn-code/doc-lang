@@ -18,11 +18,12 @@ export async function generateAction(
     options: GenerateOptions
 ): Promise<void> {
     try {
-        const services = createDocLangServices(NodeFileSystem).DocLang;
+        console.log(chalk.blue(`Generating documentation for: ${file}...`));
 
+        const services = createDocLangServices(NodeFileSystem).DocLang;
         const model = await extractAstNode<Model>(file, services);
 
-        const outputPath = generateMarkdown(
+        const outputPath = await generateMarkdown(
             model,
             file,
             options.destination
