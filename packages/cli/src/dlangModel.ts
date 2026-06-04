@@ -4,6 +4,8 @@ import { Field, Func, Model, Obj, Type } from "doc-lang-language";
    Core Dlang Types
 ========================= */
 
+export type EntityId = string;
+
 export type DlangModel = {
     title: string;
     description?: string;
@@ -14,7 +16,7 @@ export type DlangSection = {
     title: string;
     objects: DlangObject[];
     functions: DlangFunction[];
-}
+};
 
 export type DlangField = {
     name: string;
@@ -23,6 +25,7 @@ export type DlangField = {
 };
 
 export type DlangEntity = {
+    id: EntityId;
     name: string;
     description?: string;
 };
@@ -39,6 +42,25 @@ export type DlangFunction = DlangEntity & {
 };
 
 /* =========================
+    Edge System
+========================= */
+
+export type DlangEdgeKind =
+    | "owns"
+    | "dependsOn";
+
+export type DlangEdge = {
+    from: EntityId;
+    to: EntityId;
+    kind: DlangEdgeKind;
+};
+
+type GraphBuilder = {
+    edges: DlangEdge[];
+    nodes: EntityId[];
+};
+
+/* =========================
    Type System
 ========================= */
 
@@ -51,7 +73,7 @@ export type DlangType =
    Entity Registry
 ========================= */
 
-type EntityDict = Map<string, DlangEntity>;
+type EntityDict = Map<EntityId, DlangEntity>;
 
 /* =========================
    Entry Point
@@ -60,6 +82,7 @@ type EntityDict = Map<string, DlangEntity>;
 /** Convert AST model → DLang model */
 export function astModelToDlangModel(model: Model): DlangModel {
     const entities: EntityDict = new Map();
+    const graphBuilder: GraphBuilder = { edges: [], nodes: [] };
 
     const sections: DlangSection[] = [];
 
@@ -73,7 +96,7 @@ export function astModelToDlangModel(model: Model): DlangModel {
         }
 
         currentSection = null;
-    }
+    };
 
     for (const element of model.elements) {
         switch (element.$type) {
@@ -96,7 +119,7 @@ export function astModelToDlangModel(model: Model): DlangModel {
                     };
                 }
 
-                currentSection.objects.push(toObj(element, entities));
+                currentSection.objects.push(toObj(element, entities, graphBuilder));
                 break;
 
             case "Func":
@@ -108,7 +131,7 @@ export function astModelToDlangModel(model: Model): DlangModel {
                     };
                 }
 
-                currentSection.functions.push(toFunc(element, entities));
+                currentSection.functions.push(toFunc(element, entities, graphBuilder));
                 break;
 
             default:
@@ -128,21 +151,54 @@ export function astModelToDlangModel(model: Model): DlangModel {
 }
 
 /* =========================
+   ID Generation
+========================= */
+
+function createEntityId(name: string): EntityId {
+    return name; // temporary identity mapping
+}
+
+/* =========================
    Object Conversion
 ========================= */
 
 /** Convert AST object → DLang object */
-function toObj(node: Obj, dict: EntityDict): DlangObject {
-    assertUnique(node.name, dict);
+function toObj(
+    node: Obj,
+    dict: EntityDict,
+    builder: GraphBuilder
+): DlangObject {
+    const id = createEntityId(node.name);
+
+    assertUnique(id, dict);
+
+    const fields = node.members.map(toField);
 
     const obj: DlangObject = {
+        id,
         name: node.name,
         description: node.description?.text,
-        members: node.members.map(toField),
+        members: fields,
         code: node.code?.replace(/`/g, ""),
     };
 
-    dict.set(node.name, obj);
+    dict.set(id, obj);
+
+    // ---------------------------------
+    // EDGE EXTRACTION
+    // ---------------------------------
+    for (const field of fields) {
+
+        if (field.type?.kind === "entity") {
+            builder.edges.push({
+                from: id,
+                to: field.type.name,
+                kind: "owns",
+            });
+        }
+    }
+    builder.nodes.push(id); // always add to nodes, to expose entities without edges
+
     return obj;
 }
 
@@ -151,18 +207,38 @@ function toObj(node: Obj, dict: EntityDict): DlangObject {
 ========================= */
 
 /** Convert AST function → DLang function */
-function toFunc(node: Func, dict: EntityDict): DlangFunction {
-    assertUnique(node.name, dict);
+function toFunc(node: Func, dict: EntityDict, builder: GraphBuilder): DlangFunction {
+    const id = createEntityId(node.name);
+
+    assertUnique(id, dict);
+
+    const parameters = node.params.map(toField);
 
     const func: DlangFunction = {
+        id,
         name: node.name,
         description: node.description?.text,
-        parameters: node.params.map(toField),
+        parameters: parameters,
         returnType: resolveType(node.returnType?.type),
         code: node.code?.replace(/`/g, ""),
     };
 
-    dict.set(node.name, func);
+    // ---------------------------------
+    // EDGE EXTRACTION
+    // ---------------------------------
+    for (const parameter of parameters) {
+
+        if (parameter.type?.kind === "entity") {
+            builder.edges.push({
+                from: id,
+                to: parameter.type.name,
+                kind: "dependsOn",
+            });
+        }
+    }
+    builder.nodes.push(id); // always add to nodes, to expose entities without edges
+
+    dict.set(id, func);
     return func;
 }
 
@@ -209,9 +285,9 @@ function resolveDeclaredType(type?: Type): DlangType | undefined {
 ========================= */
 
 /** Ensure unique entity names in scope */
-function assertUnique(name: string, dict: EntityDict): void {
-    if (dict.has(name)) {
-        throw new Error(`Duplicate entity: ${name}`);
+function assertUnique(id: EntityId, dict: EntityDict): void {
+    if (dict.has(id)) {
+        throw new Error(`Duplicate entity: ${id}`);
     }
 }
 
