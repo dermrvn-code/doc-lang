@@ -1,7 +1,7 @@
-import { DlangField, DlangFunction, DlangObject, DlangType } from "./dlangModel.js";
+import { DlangField, DlangFunction, DlangObject, DlangSection, DlangType } from "./dlangModel.js";
+import { nanoid } from "nanoid";
 
-
-const stringToId = (str: string): string => str.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '');
+export const stringToId = (str: string): string => str.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '');
 
 export function generateHeader(title: string, description?: string): string {
     let markdown = `# ${title}\n\n`;
@@ -13,9 +13,69 @@ export function generateHeader(title: string, description?: string): string {
     return markdown;
 }
 
+export function generateGraphs(): string {
+    let markdown = "## Diagrams {#diagrams}\n\n";
 
-export function generateSection(title: string): string {
-    return `## ${title} {#${stringToId(title)}}\n\n`;
+    markdown += "### Class Diagram {#class-diagram}\n\n";
+    markdown += "> TODO: Add class diagram here\n\n";
+
+    markdown += "### Dependency Diagram {#dependency-diagram}\n\n";
+    markdown += "> TODO: Add dependency diagram here\n\n";
+
+    markdown += "\n---\n\n";
+
+    return markdown;
+}
+
+
+export function generateSection(section: DlangSection): string {
+
+    let markdownContent = "";
+    let sectionId = nanoid(16); // use generated short id, if no section title is given
+
+    if (section.title) {
+        sectionId = stringToId(section.title);
+        markdownContent += `## ${section.title} {#${sectionId}}\n\n`;
+    }
+
+    let toc = "";
+    let objects = ""
+    let functions = ""
+
+
+    if (section.objects.length > 0) {
+        let id = `#${sectionId}-objects`;
+
+        toc += `- [Objects](${id})\n`;
+        objects += `### Objects {${id}}\n\n`;
+
+
+        for (const object of section.objects) {
+            objects += generateObject(object);
+
+            toc += `  - [${object.name}](#${stringToId(object.name)})\n`;
+        }
+    }
+
+    if (section.functions.length > 0) {
+        const id = `#${sectionId}-functions`;
+
+        toc += `- [Functions](${id})\n`;
+        functions += `### Functions {${id}}\n\n`;
+
+        for (const func of section.functions) {
+            functions += generateFunction(func);
+
+            toc += `  - [${func.name}](#${stringToId(func.name)})\n`;
+        }
+    }
+
+    markdownContent += `${toc}\n---\n\n`;
+    markdownContent += objects;
+    markdownContent += functions;
+
+
+    return markdownContent;
 }
 
 export function generateObject(object: DlangObject): string {
@@ -100,7 +160,7 @@ export function generateField(field: DlangField): string {
     let markdown = `- **${field.name}**`;
 
     if (field.type) {
-        markdown += `": ${generateType(field.type)}`;
+        markdown += `: ${generateType(field.type)}`;
     }
 
 

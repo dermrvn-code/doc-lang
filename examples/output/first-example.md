@@ -37,7 +37,7 @@ Backend --> Logger : contains
 Logger --> Log : uses
 ```
 
-## Dependency Diagram {#00-02}
+### Dependency Diagram {#00-02}
 
 ```mermaid
 graph LR

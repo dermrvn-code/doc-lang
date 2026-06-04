@@ -4,14 +4,14 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { extractDestinationAndName } from './util.js';
 import { astModelToDlangModel, DlangModel } from './dlangModel.js';
-import { generateFunction, generateHeader, generateObject, generateSection } from './markdownCodeGenerator.js';
+import { generateGraphs, generateHeader, generateSection, stringToId } from './markdownCodeGenerator.js';
 
 export function generateMarkdown(
     model: Model,
     filePath: string,
     destination: string | undefined
 ): string {
-    
+
     const data = extractDestinationAndName(filePath, destination);
     const generatedFilePath = `${path.join(data.destination, data.name)}.md`;
 
@@ -32,22 +32,25 @@ function modelToMarkdown(model: Model): string {
 
     let markdownContent = generateHeader(dlangModel.title, dlangModel.description);
 
-    for (const element of dlangModel.elements) {
+    let toc = `## Table of Contents\n\n` +
+        `- [Diagrams](#diagrams)\n` +
+        `  - [Class Diagram](#class-diagram)\n` +
+        `  - [Dependency Diagram](#dependency-diagram)\n`;
 
-        switch (element.kind) {
-            case "section":
-                markdownContent += generateSection(element.value);
-                break;
-            case "object":
-                markdownContent += generateObject(element.value);
-                break;
-            case "function":
-                markdownContent += generateFunction(element.value);
-                break;
-            default:
-                break;
+    let sections = "";
+    for (const section of dlangModel.sections) {
+
+        if (section.title) {
+            toc += `- [${section.title}](#${stringToId(section.title)})\n`;
         }
+
+        sections += generateSection(section);
     }
+
+    markdownContent += toc +
+        "\n---\n\n" +
+        generateGraphs() +
+        sections;
 
     return markdownContent;
 }

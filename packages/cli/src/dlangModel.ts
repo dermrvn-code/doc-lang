@@ -7,13 +7,14 @@ import { Field, FieldValue, Func, Model, Obj, Type } from "doc-lang-language";
 export type DlangModel = {
     title: string;
     description?: string;
-    elements: DlangElement[];
+    sections: DlangSection[];
 };
 
-export type DlangElement =
-    | { kind: "section"; value: string }
-    | { kind: "object"; value: DlangObject }
-    | { kind: "function"; value: DlangFunction };
+export type DlangSection = {
+    title: string;
+    objects: DlangObject[];
+    functions: DlangFunction[];
+}
 
 export type DlangField = {
     name: string;
@@ -61,35 +62,69 @@ type EntityDict = Map<string, DlangEntity>;
 export function astModelToDlangModel(model: Model): DlangModel {
     const entities: EntityDict = new Map();
 
-    const elements: DlangElement[] = model.elements.map((el) => {
-        switch (el.$type) {
+    const sections: DlangSection[] = [];
+
+    let currentSection: DlangSection | null = null;
+
+    const flushSection = () => {
+        if (!currentSection) return;
+
+        if (currentSection.objects.length > 0 || currentSection.functions.length > 0) {
+            sections.push(currentSection);
+        }
+
+        currentSection = null;
+    }
+
+    for (const element of model.elements) {
+        switch (element.$type) {
             case "Sect":
-                return {
-                    kind: "section",
-                    value: el.text,
-                } satisfies DlangElement;
+                flushSection();
+
+                currentSection = {
+                    title: element.text,
+                    objects: [],
+                    functions: [],
+                };
+                break;
 
             case "Obj":
-                return {
-                    kind: "object",
-                    value: toObj(el, entities),
-                } satisfies DlangElement;
+                if (!currentSection) {
+                    currentSection = {
+                        title: "",
+                        objects: [],
+                        functions: [],
+                    };
+                }
+
+                currentSection.objects.push(toObj(element, entities));
+                break;
 
             case "Func":
-                return {
-                    kind: "function",
-                    value: toFunc(el, entities),
-                } satisfies DlangElement;
+                if (!currentSection) {
+                    currentSection = {
+                        title: "",
+                        objects: [],
+                        functions: [],
+                    };
+                }
+
+                currentSection.functions.push(toFunc(element, entities));
+                break;
 
             default:
-                throw new Error(`Unsupported element type: ${(el as any).$type}`);
+                throw new Error(
+                    `Unsupported element type: ${(element as any).$type}`
+                );
         }
-    });
+    }
+
+    flushSection();
 
     return {
         title: model.proj.text,
         description: model.desc?.text,
-        elements,
+        sections,
     };
 }
 
