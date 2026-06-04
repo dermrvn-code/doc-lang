@@ -1,4 +1,4 @@
-import type { ValidationAcceptor, ValidationChecks } from 'langium';
+import { AstUtils, type ValidationAcceptor, type ValidationChecks } from 'langium';
 import { Description, Entity, Field, Func, Proj, Sect, type DocLangAstType } from './generated/ast.js';
 import type { DocLangServices } from './doc-lang-module.js';
 
@@ -12,7 +12,10 @@ export function registerValidationChecks(services: DocLangServices) {
         Proj: validator.checkProjectNameOnlyOneLine,
         Sect: validator.checkSectionNamingConvention,
         Func: validator.checkFunctionHasReturnType,
-        Entity: validator.checkEntityNamingConvention,
+        Entity: [
+            validator.checkEntityNamingConvention,
+            validator.checkEntityHasEmptyLinesAround
+        ],
         Description: validator.checkEntityDescriptionOnlyOneLine,
         Field: validator.checkFieldNamingConvention
     };
@@ -47,6 +50,51 @@ export class DocLangValidator {
     checkFunctionHasReturnType(func: Func, accept: ValidationAcceptor): void {
         if (!func.returnType) {
             accept('warning', `Function should have a return type. ${func.returnType}`, { node: func, property: 'returnType' });
+        }
+    }
+
+    checkEntityHasEmptyLinesAround(entity: Entity, accept: ValidationAcceptor): void {
+        const cstNode = entity.$cstNode;
+        if (!cstNode) {
+            return;
+        }
+
+        const text = AstUtils.getDocument(entity).textDocument.getText();
+        const lines = text.split(/\r?\n/);
+
+        const startLine = cstNode.range.start.line;
+        const endLine = cstNode.range.end.line;
+
+        // Check line before (unless entity starts the file)
+        const hasContentBefore = lines
+            .slice(0, startLine)
+            .some(line => line.trim() !== '');
+
+        if (hasContentBefore) {
+            const lineBefore = lines[startLine - 1] ?? '';
+            if (lineBefore.trim() !== '') {
+                accept(
+                    'warning',
+                    'Entity should be preceded by an empty line.',
+                    { node: entity }
+                );
+            }
+        }
+
+        // Check line after (unless entity ends the file)
+        const hasContentAfter = lines
+            .slice(endLine + 1)
+            .some(line => line.trim() !== '');
+
+        if (hasContentAfter) {
+            const lineAfter = lines[endLine + 1] ?? '';
+            if (lineAfter.trim() !== '') {
+                accept(
+                    'warning',
+                    'Entity should be followed by an empty line.',
+                    { node: entity }
+                );
+            }
         }
     }
 
