@@ -10,6 +10,7 @@ export type DlangModel = {
     title: string;
     description?: string;
     sections: DlangSection[];
+    graphBuilder: GraphBuilder;
 };
 
 export type DlangSection = {
@@ -55,7 +56,7 @@ export type DlangEdge = {
     kind: DlangEdgeKind;
 };
 
-type GraphBuilder = {
+export type GraphBuilder = {
     edges: DlangEdge[];
     nodes: EntityId[];
 };
@@ -147,6 +148,7 @@ export function astModelToDlangModel(model: Model): DlangModel {
         title: model.proj.text,
         description: model.desc?.text,
         sections,
+        graphBuilder,
     };
 }
 

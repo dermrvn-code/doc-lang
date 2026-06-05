@@ -20,17 +20,17 @@ classDiagram
 direction LR
 
 class Backend {
-  +Logger logger
+  Logger logger
 }
 
 class Logger {
-  +string name
-  +int id = 0
-  +Func Log
+  string name
+  int id = 0
+  Func Log
 }
 
 class Log {
-  +void Log(string message)
+  void Log(string message)
 }
 
 Backend --> Logger : contains

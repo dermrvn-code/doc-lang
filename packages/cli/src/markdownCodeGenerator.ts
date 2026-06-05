@@ -1,4 +1,4 @@
-import { DlangField, DlangFunction, DlangObject, DlangSection, DlangType } from "./dlangModel.js";
+import { DlangField, DlangFunction, DlangObject, DlangSection, DlangType, GraphBuilder } from "./dlangModel.js";
 import { nanoid } from "nanoid";
 
 export const stringToId = (str: string): string => str.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '');
@@ -13,18 +13,67 @@ export function generateHeader(title: string, description?: string): string {
     return markdown;
 }
 
-export function generateGraphs(): string {
+export function generateGraphs(graphBuilder: GraphBuilder): string {
     let markdown = "## Diagrams {#diagrams}\n\n";
 
     markdown += "### Class Diagram {#class-diagram}\n\n";
     markdown += "> TODO: Add class diagram here\n\n";
 
     markdown += "### Dependency Diagram {#dependency-diagram}\n\n";
-    markdown += "> TODO: Add dependency diagram here\n\n";
+    markdown += generateDependencyMermaidGraph(graphBuilder);
 
     markdown += "\n---\n\n";
 
     return markdown;
+}
+
+export function generateDependencyMermaidGraph(graphBuilder: GraphBuilder): string {
+    let mermaid = "```mermaid\n";
+    mermaid += "graph LR\n\n";
+
+    const connectedNodes = new Set<string>();
+
+    for (const edge of graphBuilder.edges) {
+        connectedNodes.add(edge.from);
+        connectedNodes.add(edge.to);
+    }
+
+    const looseNodeIds: string[] = [];
+
+    for (const node of graphBuilder.nodes) {
+        const nodeId = stringToId(node);
+
+        mermaid += `${nodeId}["${node}"]\n`;
+
+        if (!connectedNodes.has(node)) {
+            looseNodeIds.push(nodeId);
+        }
+    }
+
+    mermaid += "\n";
+
+    for (const edge of graphBuilder.edges) {
+        const fromId = stringToId(edge.from);
+        const toId = stringToId(edge.to);
+
+        let relation = "---";
+        if (edge.kind === "owns") {
+            relation = '-->|"owns"|';
+        } else if (edge.kind === "dependsOn") {
+            relation = '-->|"depends on"|';
+        }
+
+        mermaid += `${fromId} ${relation} ${toId}\n`;
+    }
+
+    // Highlight loose nodes (not connected to any edge)
+    if (looseNodeIds.length > 0) {
+        mermaid += "\n";
+        mermaid += "classDef loose fill:#ffebee,stroke:#f44336,stroke-width:4px;\n";
+        mermaid += `class ${looseNodeIds.join(",")} loose;\n`;
+    }
+
+    return mermaid + "```\n";
 }
 
 
