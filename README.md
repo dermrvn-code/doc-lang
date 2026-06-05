@@ -93,9 +93,3 @@ If you use either method above, ensure the project is built first:
 ```bash
 npm run build
 ```
-
-### Current status:
-
-> This script is a placeholder.  
-> Full compilation/execution pipeline is not implemented yet.
-
