@@ -2,13 +2,15 @@ import MarkdownIt from "markdown-it";
 import markdownItAttrs from "markdown-it-attrs";
 import mermaid from "mermaid";
 
-import dummyMD from '../../../examples/output/first-example.md?raw';
+import { dlangStringToMarkdown } from "doc-lang-cli";
 
+import { NodeFileSystem } from 'langium/node';
 
 import {
   startMonacoEditor,
   getCurrentCode,
 } from "./dsleditor/maindsl.js";
+import { createDocLangServices, Model } from "doc-lang-language";
 
 const md = new MarkdownIt({
   html: true,
@@ -72,8 +74,9 @@ const updateMarkdown = async () => {
 
   const code = getCurrentCode();
 
-  // TODO: Replace with generated Markdown from DSL
-  const finalMD = dummyMD;
+  console.log(code);
+
+  const finalMD = await dlangStringToMarkdown(code);
 
   mdelem.innerHTML = md.render(finalMD);
 
@@ -101,3 +104,5 @@ export const runDsl = async () => {
     console.error(e);
   }
 };
+
+
