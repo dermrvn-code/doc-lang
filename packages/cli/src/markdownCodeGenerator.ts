@@ -148,7 +148,13 @@ export function generateObject(object: DlangObject): string {
         markdown += generateCodeBlock(object.code);
     }
 
-    // TODO: Add "See also"
+    if (object.references && object.references.length > 0) {
+        markdown += "**See also**\n\n";
+
+        for (const ref of object.references) {
+            markdown += `- [\`${ref}\`](#${stringToId(ref)})\n`;
+        }
+    }
 
     markdown += "---\n\n";
     return markdown;
@@ -179,7 +185,13 @@ export function generateFunction(func: DlangFunction): string {
         markdown += generateCodeBlock(func.code);
     }
 
-    // TODO: Add "See also"
+    if (func.references && func.references.length > 0) {
+        markdown += "**See also**\n\n";
+
+        for (const ref of func.references) {
+            markdown += `- [\`${ref}\`](#${stringToId(ref)})\n`;
+        }
+    }
 
     markdown += "---\n\n";
     return markdown;
@@ -198,7 +210,7 @@ export function generateType(type: DlangType): string {
     if (type.kind === "primitive") {
         markdown += `\`${type.name}\``;
     } else if (type.kind === "entity") {
-        markdown += `\`${type.name}\``;
+        markdown += `[\`${type.name}\`](#${stringToId(type.name)})`;
     }
 
     return markdown;
@@ -212,17 +224,8 @@ export function generateField(field: DlangField): string {
         markdown += `: ${generateType(field.type)}`;
     }
 
-
-    if (field.value !== undefined) {
-
-        if (field.type?.kind === "primitive") {
-            markdown += ` = ${field.value}`;
-
-        } else if (field.type?.kind === "entity") {
-            // TODO: linking
-
-            markdown += ` = [\`${field.value}\`]()`;
-        }
+    if (field.value !== undefined && field.type?.kind === "primitive") {
+        markdown += ` = ${field.value}`;
     }
 
     return markdown;

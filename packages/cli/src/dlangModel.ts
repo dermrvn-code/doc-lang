@@ -29,6 +29,7 @@ export type DlangEntity = {
     id: EntityId;
     name: string;
     description?: string;
+    references?: EntityId[];
 };
 
 export type DlangObject = DlangEntity & {
@@ -182,6 +183,7 @@ function toObj(
         description: node.description?.text,
         members: fields,
         code: node.code?.replace(/`/g, ""),
+        references: []
     };
 
     dict.set(id, obj);
@@ -197,6 +199,9 @@ function toObj(
                 to: field.type.name,
                 kind: "owns",
             });
+
+            // Track references for use in "See also" section
+            obj.references?.push(field.type.name);
         }
     }
     builder.nodes.push(id); // always add to nodes, to expose entities without edges
@@ -223,6 +228,7 @@ function toFunc(node: Func, dict: EntityDict, builder: GraphBuilder): DlangFunct
         parameters: parameters,
         returnType: resolveType(node.returnType?.type),
         code: node.code?.replace(/`/g, ""),
+        references: []
     };
 
     // ---------------------------------
@@ -236,6 +242,9 @@ function toFunc(node: Func, dict: EntityDict, builder: GraphBuilder): DlangFunct
                 to: parameter.type.name,
                 kind: "dependsOn",
             });
+
+            // Track references for use in "See also" section
+            func.references?.push(parameter.type.name);
         }
     }
     builder.nodes.push(id); // always add to nodes, to expose entities without edges
