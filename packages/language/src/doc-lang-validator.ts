@@ -17,7 +17,10 @@ export function registerValidationChecks(services: DocLangServices) {
             validator.checkEntityHasEmptyLinesAround
         ],
         Description: validator.checkEntityDescriptionOnlyOneLine,
-        Field: validator.checkFieldNamingConvention
+        Field: [
+            validator.checkFieldNamingConvention,
+            validator.checkFieldTypeValueConsistency
+        ]
     };
     registry.register(checks, validator);
 }
@@ -31,6 +34,20 @@ export class DocLangValidator {
     checkSectionNamingConvention(section: Sect, accept: ValidationAcceptor): void {
         if (section.text && !this._checkOneLineString(section.text)) {
             accept('error', 'Section text can be only one line.', { node: section, property: 'text' });
+        }
+    }
+
+    checkFieldTypeValueConsistency(field: Field, accept: ValidationAcceptor): void {
+        const type = field.type;
+
+        const isEntityType = type && type.$type === 'EntityType';
+
+        if (isEntityType && field.value != undefined) {
+            accept(
+                'error',
+                'Entity-typed fields cannot have a value assigned.',
+                { node: field, property: 'value' }
+            );
         }
     }
 

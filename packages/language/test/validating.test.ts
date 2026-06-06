@@ -45,9 +45,9 @@ describe("Project / Section / Description validation", () => {
             Proj "MyProject"
             Sect "Main Section"
 
-            Obj TestObj {
-                "Simple description"
-            }
+            Obj TestObj
+            "Simple description"
+            
         `);
 
         expect(diags).toHaveLength(0);
@@ -75,10 +75,10 @@ Section"
         const diags = await validate(`
             Proj "X"
 
-            Obj A {
-                "line1
-line2"
-            }
+            Obj A
+            "line1
+            line2"
+        
         `);
         expect(hasDiagnostic(diags, "Description should be only one line.")).toBe(true);
     });
@@ -92,9 +92,8 @@ describe("Function validation", () => {
 
     test("function without return type produces warning", async () => {
         const diags = await validate(`
-            Func MyFunc {
-                description "test"
-            }
+            Func MyFunc
+            description "test"
         `);
 
         expect(hasDiagnostic(diags, "Function should have a return type")).toBe(true);
@@ -102,9 +101,8 @@ describe("Function validation", () => {
 
     test("function with return type is valid", async () => {
         const diags = await validate(`
-            Func MyFunc {
-                return: int
-            }
+            Func MyFunc 
+            return: int
         `);
 
         expect(hasDiagnostic(diags, "Function should have a return type")).toBe(false);
@@ -121,8 +119,7 @@ describe("Naming conventions", () => {
         const diags = await validate(`
             Proj "X"
 
-            Obj badName {
-            }
+            Obj badName
         `);
 
         expect(hasDiagnostic(diags, "Entity name should be in upper camelCase.")).toBe(true);
@@ -132,9 +129,8 @@ describe("Naming conventions", () => {
         const diags = await validate(`
             Proj "X"
 
-            Obj Test {
-                BadField: string
-            }
+            Obj Test
+            BadField: string
         `);
 
         expect(hasDiagnostic(diags, "Field name should be in lowerCamelCase.")).toBe(true);
@@ -144,9 +140,8 @@ describe("Naming conventions", () => {
         const diags = await validate(`
             Proj "X"
 
-            Obj GoodName {
-                goodField: string
-            }
+            Obj GoodName
+            goodField: string
         `);
 
         const namingIssues = diags.filter(d =>
@@ -155,6 +150,113 @@ describe("Naming conventions", () => {
 
         expect(namingIssues).toHaveLength(0);
     });
+});
+
+/* -------------------------------------------------
+   Entity spacing validation (empty lines around entities)
+-------------------------------------------------- */
+
+describe("Entity spacing rules", () => {
+
+    test("entity with proper empty lines is valid", async () => {
+        const diags = await validate(`
+
+            Proj "X"
+
+            Obj GoodEntity
+
+            Sect "After"
+
+        `);
+
+        expect(hasDiagnostic(diags, "Entity should be preceded by an empty line.")).toBe(false);
+        expect(hasDiagnostic(diags, "Entity should be followed by an empty line.")).toBe(false);
+    });
+
+    test("entity without preceding empty line produces warning", async () => {
+        const diags = await validate(`
+            Proj "X"
+            Obj BadEntity
+        `);
+
+        expect(hasDiagnostic(diags, "Entity should be preceded by an empty line.")).toBe(true);
+    });
+
+    test("entity without trailing empty line produces warning", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj BadEntity 
+            Sect "Next"
+        `);
+
+        expect(hasDiagnostic(diags, "Entity should be followed by an empty line.")).toBe(true);
+    });
+
+    test("entity surrounded by other content produces both warnings", async () => {
+        const diags = await validate(`
+            Proj "X"
+            Obj BadEntity
+            Sect "Next"
+        `);
+
+        expect(hasDiagnostic(diags, "Entity should be preceded by an empty line.")).toBe(true);
+        expect(hasDiagnostic(diags, "Entity should be followed by an empty line.")).toBe(true);
+    });
+
+});
+
+/* -------------------------------------------------
+   Field type/value consistency validation
+-------------------------------------------------- */
+
+describe("Field type/value consistency", () => {
+
+    test("primitive field allows value", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj Test
+            name: string = "hello"
+            count: int = 42
+        `);
+
+        expect(hasDiagnostic(diags, "Entity-typed fields cannot have a value assigned.")).toBe(false);
+    });
+
+    test("entity type field with value produces error", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj Test
+            ref: SomeEntity = "invalid"
+        `);
+
+        expect(hasDiagnostic(diags, "Entity-typed fields cannot have a value assigned.")).toBe(true);
+    });
+
+    test("entity type field without value is valid", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj Test
+            ref: SomeEntity
+        `);
+
+        expect(hasDiagnostic(diags, "Entity-typed fields cannot have a value assigned.")).toBe(false);
+    });
+
+    test("missing type with value is allowed", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj Test
+            loose = "value"
+        `);
+
+        expect(hasDiagnostic(diags, "Entity-typed fields cannot have a value assigned.")).toBe(false);
+    });
+
 });
 
 /* -------------------------------------------------
@@ -171,12 +273,10 @@ Project"
             Sect "Bad
 Section"
 
-            Func badFunc {
-                BadField: string
-            }
+            Func badFunc
+            BadField: string
 
-            Obj badObj {
-            }
+            Obj badObj
         `);
 
         expect(hasDiagnostic(diags, "Project name should be only one line.")).toBe(true);

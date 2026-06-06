@@ -9,7 +9,7 @@ Here will be the documentation for the "Example Project".
   - [Dependency Diagram](#00-02)
 - [Example Section](#01)
 
---
+---
 
 ## Diagrams {#00}
 
@@ -20,24 +20,24 @@ classDiagram
 direction LR
 
 class Backend {
-  +Logger logger
+  Logger logger
 }
 
 class Logger {
-  +string name
-  +int id = 0
-  +Func Log
+  string name
+  int id = 0
+  Func Log
 }
 
 class Log {
-  +void Log(string message)
+  void Log(string message)
 }
 
 Backend --> Logger : contains
 Logger --> Log : uses
 ```
 
-## Dependency Diagram {#00-02}
+### Dependency Diagram {#00-02}
 
 ```mermaid
 graph LR
@@ -90,7 +90,7 @@ Main backend container object.
 
 **Fields**
 
-- **logger**: [`Logger`](#01-01-01) = new Logger()
+- **logger**: [`Logger`](#01-01-01)
 
 **Usage**
 ```

@@ -4,7 +4,6 @@ import { clearDocuments, parseHelper } from 'langium/test';
 
 import type {
     Func,
-    Literal,
     Model,
     Obj,
     PrimitiveType
@@ -173,10 +172,7 @@ describe('Parser tests', () => {
         expect(checkDocumentValid(document)).toBeUndefined();
 
         const obj = document.parseResult.value.elements[0] as Obj;
-        expect(obj.members[0].value?.$type).toBe('Literal');
-
-        const literal = obj.members[0].value as Literal;
-        expect(literal.value).toBe('John');
+        expect(obj.members[0].value).toBe('John');
     });
 
     test('parses integer literal field value', async () => {
@@ -191,11 +187,7 @@ describe('Parser tests', () => {
         expect(checkDocumentValid(document)).toBeUndefined();
 
         const obj = document.parseResult.value.elements[0] as Obj;
-
-        expect(obj.members[0].value?.$type).toBe('Literal');
-
-        const literal = obj.members[0].value as Literal;
-        expect(literal.value).toBe(42);
+        expect(obj.members[0].value).toBe(42);
     });
 
     test('parses code block on object', async () => {

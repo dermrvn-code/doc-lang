@@ -3,20 +3,55 @@ import type { Model } from 'doc-lang-language';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { extractDestinationAndName } from './util.js';
+import { astModelToDlangModel, DlangModel } from './dlangModel.js';
+import { generateGraphs, generateHeader, generateSection, stringToId } from './markdownCodeGenerator.js';
 
-export function generateJavaScript(model: Model, filePath: string, destination: string | undefined): string {
+export function generateMarkdown(
+    model: Model,
+    filePath: string,
+    destination: string | undefined
+): string {
+
     const data = extractDestinationAndName(filePath, destination);
-    const generatedFilePath = `${path.join(data.destination, data.name)}.js`;
-
-    // const fileNode = expandToNode`
-    //     "use strict";
-
-    //     ${joinToNode(model.greetings, greeting => `console.log('Hello, ${greeting.person.ref?.name}!');`, { appendNewLineIfNotEmpty: true })}
-    // `.appendNewLineIfNotEmpty();
+    const generatedFilePath = `${path.join(data.destination, data.name)}.md`;
 
     if (!fs.existsSync(data.destination)) {
         fs.mkdirSync(data.destination, { recursive: true });
     }
-    // fs.writeFileSync(generatedFilePath, toString(fileNode));
+
+    const content = modelToMarkdown(model);
+
+    fs.writeFileSync(generatedFilePath, content);
+
     return generatedFilePath;
 }
+
+function modelToMarkdown(model: Model): string {
+
+    const dlangModel: DlangModel = astModelToDlangModel(model);
+
+    let markdownContent = generateHeader(dlangModel.title, dlangModel.description);
+
+    let toc = `## Table of Contents\n\n` +
+        `- [Diagrams](#diagrams)\n` +
+        `  - [Class Diagram](#class-diagram)\n` +
+        `  - [Dependency Diagram](#dependency-diagram)\n`;
+
+    let sections = "";
+    for (const section of dlangModel.sections) {
+
+        if (section.title) {
+            toc += `- [${section.title}](#${stringToId(section.title)})\n`;
+        }
+
+        sections += generateSection(section);
+    }
+
+    markdownContent += toc +
+        "\n---\n\n" +
+        generateGraphs(dlangModel.graphBuilder) +
+        sections;
+
+    return markdownContent;
+}
+

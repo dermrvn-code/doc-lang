@@ -1,13 +1,13 @@
 Proj "Example Project"
-Descr "Here will be the documentation for the 'Example Project'. "
+Descr "Here will be the documentation for the 'Example Project'."
 
 Sect "Example Section"
 
 Obj Logger
 "Core logging component of the system."
 name: string
-id: int = 0
-log = Log
+id = 0
+log: Log
 ```
 Logger logger = new Logger()
 ```
