@@ -1,9 +1,21 @@
-import { DlangField, DlangFunction, DlangObject, DlangSection, DlangType, GraphBuilder } from "./dlangModel.js";
+import {
+    DlangField,
+    DlangFunction,
+    DlangObject,
+    DlangSection,
+    DlangType,
+    GraphBuilder,
+} from "./dlangModel.js";
 import { nanoid } from "nanoid";
 
-export const stringToId = (str: string): string => str.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '');
+export const stringToId = (str: string): string => {
+    return str.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '')
+};
 
-export function generateHeader(title: string, description?: string): string {
+export function generateHeader(
+    title: string,
+    description?: string
+): string {
     let markdown = `# ${title}\n\n`;
 
     if (description) {
@@ -13,7 +25,9 @@ export function generateHeader(title: string, description?: string): string {
     return markdown;
 }
 
-export function generateGraphs(graphBuilder: GraphBuilder): string {
+export function generateGraphs(
+    graphBuilder: GraphBuilder
+): string {
     let markdown = "## Diagrams {#diagrams}\n\n";
 
     markdown += "### Class Diagram {#class-diagram}\n\n";
@@ -27,7 +41,9 @@ export function generateGraphs(graphBuilder: GraphBuilder): string {
     return markdown;
 }
 
-export function generateDependencyMermaidGraph(graphBuilder: GraphBuilder): string {
+export function generateDependencyMermaidGraph(
+    graphBuilder: GraphBuilder
+): string {
     let mermaid = "```mermaid\n";
     mermaid += "graph LR\n\n";
 
@@ -57,6 +73,7 @@ export function generateDependencyMermaidGraph(graphBuilder: GraphBuilder): stri
         const toId = stringToId(edge.to);
 
         let relation = "---";
+
         if (edge.kind === "owns") {
             relation = '-->|"owns"|';
         } else if (edge.kind === "dependsOn") {
@@ -69,40 +86,43 @@ export function generateDependencyMermaidGraph(graphBuilder: GraphBuilder): stri
     // Highlight loose nodes (not connected to any edge)
     if (looseNodeIds.length > 0) {
         mermaid += "\n";
-        mermaid += "classDef loose fill:#ffebee,stroke:#f44336,stroke-width:4px;\n";
+        mermaid +=
+            "classDef loose fill:#ffebee,stroke:#f44336,stroke-width:4px;\n";
         mermaid += `class ${looseNodeIds.join(",")} loose;\n`;
     }
 
     return mermaid + "```\n";
 }
 
-
-export function generateSection(section: DlangSection): string {
-
+export function generateSection(
+    section: DlangSection
+): string {
     let markdownContent = "";
-    let sectionId = nanoid(16); // use generated short id, if no section title is given
+
+    const sectionId = section.title
+        ? stringToId(section.title)
+        : nanoid(16);
 
     if (section.title) {
-        sectionId = stringToId(section.title);
         markdownContent += `## ${section.title} {#${sectionId}}\n\n`;
     }
 
     let toc = "";
-    let objects = ""
-    let functions = ""
-
+    let objects = "";
+    let functions = "";
 
     if (section.objects.length > 0) {
-        let id = `#${sectionId}-objects`;
+        const id = `#${sectionId}-objects`;
 
         toc += `- [Objects](${id})\n`;
         objects += `### Objects {${id}}\n\n`;
 
-
         for (const object of section.objects) {
             objects += generateObject(object);
 
-            toc += `  - [${object.name}](#${stringToId(object.name)})\n`;
+            toc += `  - [${object.name}](#${stringToId(
+                object.name
+            )})\n`;
         }
     }
 
@@ -115,7 +135,9 @@ export function generateSection(section: DlangSection): string {
         for (const func of section.functions) {
             functions += generateFunction(func);
 
-            toc += `  - [${func.name}](#${stringToId(func.name)})\n`;
+            toc += `  - [${func.name}](#${stringToId(
+                func.name
+            )})\n`;
         }
     }
 
@@ -123,108 +145,145 @@ export function generateSection(section: DlangSection): string {
     markdownContent += objects;
     markdownContent += functions;
 
-
     return markdownContent;
 }
 
-export function generateObject(object: DlangObject): string {
+export function generateObject(
+    object: DlangObject
+): string {
+    let body = "";
 
-    let markdown = `### \`${object.name}\` {#${stringToId(object.name)}}\n\n`;
+    body += generateFieldSection(
+        "Fields",
+        object.members
+    );
 
-    if (object.description) {
-        markdown += `${object.description}\n\n`;
-    }
-
-    if (object.members.length > 0) {
-        markdown += "**Fields**\n\n";
-
-        for (const field of object.members) {
-            markdown += generateField(field) + "\n";
-        }
-        markdown += "\n";
-    }
-
-    if (object.code) {
-        markdown += generateCodeBlock(object.code);
-    }
-
-    if (object.references && object.references.length > 0) {
-        markdown += "**See also**\n\n";
-
-        for (const ref of object.references) {
-            markdown += `- [\`${ref}\`](#${stringToId(ref)})\n`;
-        }
-    }
-
-    markdown += "---\n\n";
-    return markdown;
+    return generateEntity(
+        object,
+        `\`${object.name}\``,
+        body
+    );
 }
 
-export function generateFunction(func: DlangFunction): string {
-    let markdown = `### \`${func.name}()\` {#${stringToId(func.name)}}\n\n`;
+export function generateFunction(
+    func: DlangFunction
+): string {
+    let body = "";
 
-    if (func.description) {
-        markdown += `${func.description}\n\n`;
-    }
-
-    if (func.parameters.length > 0) {
-        markdown += "**Parameters**\n\n";
-
-        for (const param of func.parameters) {
-            markdown += generateField(param) + "\n";
-        }
-        markdown += "\n";
-    }
-
+    body += generateFieldSection(
+        "Parameters",
+        func.parameters
+    );
 
     if (func.returnType) {
-        markdown += `**Returns**: ${generateType(func.returnType)}\n\n`;
+        body += `**Returns**: ${generateType(
+            func.returnType
+        )}\n\n`;
     }
 
-    if (func.code) {
-        markdown += generateCodeBlock(func.code);
+    return generateEntity(
+        func,
+        `\`${func.name}()\``,
+        body
+    );
+}
+
+function generateEntity(
+    entity: DlangObject | DlangFunction,
+    title: string,
+    body: string
+): string {
+    let markdown = `### ${title} {#${stringToId(
+        entity.name
+    )}}\n\n`;
+
+    if (entity.description) {
+        markdown += `${entity.description}\n\n`;
     }
 
-    if (func.references && func.references.length > 0) {
+    markdown += body;
+
+    if (entity.code) {
+        markdown += generateCodeBlock(entity.code);
+    }
+
+    if (entity.references.length > 0) {
         markdown += "**See also**\n\n";
 
-        for (const ref of func.references) {
-            markdown += `- [\`${ref}\`](#${stringToId(ref)})\n`;
+        for (const ref of entity.references) {
+            markdown += `- [\`${ref}\`](#${stringToId(
+                ref
+            )})\n`;
         }
+
+        markdown += "\n";
     }
 
     markdown += "---\n\n";
+
     return markdown;
 }
 
-export function generateCodeBlock(code: string): string {
-    return "**Usage**\n" +
-        "```" +
-        code +
-        "```\n\n";
-}
-
-export function generateType(type: DlangType): string {
-    let markdown = "";
-
-    if (type.kind === "primitive") {
-        markdown += `\`${type.name}\``;
-    } else if (type.kind === "entity") {
-        markdown += `[\`${type.name}\`](#${stringToId(type.name)})`;
+function generateFieldSection(
+    title: string,
+    fields: DlangField[]
+): string {
+    if (fields.length === 0) {
+        return "";
     }
 
+    let markdown = `**${title}**\n`;
+
+    for (const field of fields) {
+        markdown += generateField(field) + "\n";
+    }
+
+    markdown += "\n";
+
     return markdown;
 }
 
+export function generateCodeBlock(
+    code: string
+): string {
+    return (
+        "**Usage**\n" +
+        "```" +
+        code +
+        "```\n\n"
+    );
+}
 
-export function generateField(field: DlangField): string {
+export function generateType(
+    type: DlangType
+): string {
+    switch (type.kind) {
+        case "primitive":
+            return `\`${type.name}\``;
+
+        case "entity":
+            return `[\`${type.name}\`](#${stringToId(
+                type.name
+            )})`;
+
+        default:
+            return "";
+    }
+}
+
+export function generateField(
+    field: DlangField
+): string {
     let markdown = `- **${field.name}**`;
 
     if (field.type) {
         markdown += `: ${generateType(field.type)}`;
     }
 
-    if (field.value !== undefined && field.type?.kind === "primitive") {
+    if (
+        field.value !== undefined &&
+        field.type?.kind === "primitive"
+    ) {
         markdown += ` = ${field.value}`;
     }
 

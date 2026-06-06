@@ -29,7 +29,7 @@ export type DlangEntity = {
     id: EntityId;
     name: string;
     description?: string;
-    references?: EntityId[];
+    references: EntityId[];
 };
 
 export type DlangObject = DlangEntity & {
@@ -93,7 +93,10 @@ export function astModelToDlangModel(model: Model): DlangModel {
     const flushSection = () => {
         if (!currentSection) return;
 
-        if (currentSection.objects.length > 0 || currentSection.functions.length > 0) {
+        if (
+            currentSection.objects.length > 0 ||
+            currentSection.functions.length > 0
+        ) {
             sections.push(currentSection);
         }
 
@@ -104,36 +107,23 @@ export function astModelToDlangModel(model: Model): DlangModel {
         switch (element.$type) {
             case "Sect":
                 flushSection();
-
-                currentSection = {
-                    title: element.text,
-                    objects: [],
-                    functions: [],
-                };
+                currentSection = createSection(element.text);
                 break;
 
             case "Obj":
-                if (!currentSection) {
-                    currentSection = {
-                        title: "",
-                        objects: [],
-                        functions: [],
-                    };
-                }
+                currentSection ??= createSection();
 
-                currentSection.objects.push(toObj(element, entities, graphBuilder));
+                currentSection.objects.push(
+                    toObj(element, entities, graphBuilder)
+                );
                 break;
 
             case "Func":
-                if (!currentSection) {
-                    currentSection = {
-                        title: "",
-                        objects: [],
-                        functions: [],
-                    };
-                }
+                currentSection ??= createSection();
 
-                currentSection.functions.push(toFunc(element, entities, graphBuilder));
+                currentSection.functions.push(
+                    toFunc(element, entities, graphBuilder)
+                );
                 break;
 
             default:
@@ -171,40 +161,26 @@ function toObj(
     dict: EntityDict,
     builder: GraphBuilder
 ): DlangObject {
-    const id = createEntityId(node.name);
-
-    assertUnique(id, dict);
-
     const fields = node.members.map(toField);
 
     const obj: DlangObject = {
-        id,
-        name: node.name,
-        description: node.description?.text,
+        ...createEntityBase(node.name, node.description?.text),
         members: fields,
-        code: node.code?.replace(/`/g, ""),
-        references: []
+        code: stripCode(node.code),
     };
 
-    dict.set(id, obj);
+    registerEntity(obj, dict, builder);
 
     // ---------------------------------
     // EDGE EXTRACTION
     // ---------------------------------
-    for (const field of fields) {
-
-        if (field.type?.kind === "entity") {
-            builder.edges.push({
-                from: id,
-                to: field.type.name,
-                kind: "owns",
-            });
-
-            // Track references for use in "See also" section
-            obj.references?.push(field.type.name);
-        }
-    }
-    builder.nodes.push(id); // always add to nodes, to expose entities without edges
+    collectEntityReferences(
+        obj.id,
+        fields,
+        "owns",
+        obj,
+        builder
+    );
 
     return obj;
 }
@@ -214,42 +190,33 @@ function toObj(
 ========================= */
 
 /** Convert AST function → DLang function */
-function toFunc(node: Func, dict: EntityDict, builder: GraphBuilder): DlangFunction {
-    const id = createEntityId(node.name);
-
-    assertUnique(id, dict);
-
+function toFunc(
+    node: Func,
+    dict: EntityDict,
+    builder: GraphBuilder
+): DlangFunction {
     const parameters = node.params.map(toField);
 
     const func: DlangFunction = {
-        id,
-        name: node.name,
-        description: node.description?.text,
-        parameters: parameters,
+        ...createEntityBase(node.name, node.description?.text),
+        parameters,
         returnType: resolveType(node.returnType?.type),
-        code: node.code?.replace(/`/g, ""),
-        references: []
+        code: stripCode(node.code),
     };
+
+    registerEntity(func, dict, builder);
 
     // ---------------------------------
     // EDGE EXTRACTION
     // ---------------------------------
-    for (const parameter of parameters) {
+    collectEntityReferences(
+        func.id,
+        parameters,
+        "dependsOn",
+        func,
+        builder
+    );
 
-        if (parameter.type?.kind === "entity") {
-            builder.edges.push({
-                from: id,
-                to: parameter.type.name,
-                kind: "dependsOn",
-            });
-
-            // Track references for use in "See also" section
-            func.references?.push(parameter.type.name);
-        }
-    }
-    builder.nodes.push(id); // always add to nodes, to expose entities without edges
-
-    dict.set(id, func);
     return func;
 }
 
@@ -261,7 +228,7 @@ function toFunc(node: Func, dict: EntityDict, builder: GraphBuilder): DlangFunct
 function toField(node: Field): DlangField {
     return {
         name: node.name,
-        type: resolveType(node.type, node.value),
+        type: resolveType(node.type),
         value: node.value,
     };
 }
@@ -271,20 +238,21 @@ function toField(node: Field): DlangField {
 ========================= */
 
 /** Resolve declared or inferred type */
-function resolveType(type?: Type, value?: string): DlangType | undefined {
-    return resolveDeclaredType(type);
-}
-
-/** Convert explicit AST type */
-function resolveDeclaredType(type?: Type): DlangType | undefined {
-    if (type == undefined) return;
+function resolveType(type?: Type): DlangType | undefined {
+    if (!type) return;
 
     switch (type.$type) {
         case "PrimitiveType":
-            return { kind: "primitive", name: type.primitive };
+            return {
+                kind: "primitive",
+                name: type.primitive,
+            };
 
         case "EntityType":
-            return { kind: "entity", name: unwrap(type.ref).name };
+            return {
+                kind: "entity",
+                name: unwrap(type.ref).name,
+            };
 
         default:
             return;
@@ -294,6 +262,62 @@ function resolveDeclaredType(type?: Type): DlangType | undefined {
 /* =========================
    Helpers
 ========================= */
+
+function createSection(title = ""): DlangSection {
+    return {
+        title,
+        objects: [],
+        functions: [],
+    };
+}
+
+function createEntityBase(
+    name: string,
+    description?: string
+): DlangEntity {
+    return {
+        id: createEntityId(name),
+        name,
+        description,
+        references: [],
+    };
+}
+
+function registerEntity(
+    entity: DlangEntity,
+    dict: EntityDict,
+    builder: GraphBuilder
+): void {
+    assertUnique(entity.id, dict);
+
+    dict.set(entity.id, entity);
+    builder.nodes.push(entity.id);
+}
+
+function collectEntityReferences(
+    sourceId: EntityId,
+    fields: DlangField[],
+    kind: DlangEdgeKind,
+    entity: DlangEntity,
+    builder: GraphBuilder
+): void {
+    for (const field of fields) {
+        if (field.type?.kind !== "entity") continue;
+
+        builder.edges.push({
+            from: sourceId,
+            to: field.type.name,
+            kind,
+        });
+
+        // Track references for use in "See also" section
+        entity.references.push(field.type.name);
+    }
+}
+
+function stripCode(code?: string): string | undefined {
+    return code?.replace(/`/g, "");
+}
 
 /** Ensure unique entity names in scope */
 function assertUnique(id: EntityId, dict: EntityDict): void {
@@ -307,5 +331,6 @@ function unwrap<T extends { ref?: unknown }>(wrapper: T): any {
     if (!wrapper?.ref) {
         throw new Error("Invalid AST reference: missing ref");
     }
+
     return wrapper.ref;
 }
