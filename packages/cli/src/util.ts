@@ -37,6 +37,25 @@ export async function extractAstNode<T extends AstNode>(fileName: string, servic
     return (await extractDocument(fileName, services)).parseResult?.value as T;
 }
 
+export async function parseModelFromString<T extends AstNode>(
+    code: string,
+    services: LangiumCoreServices
+): Promise<T> {
+
+    const document = services.shared.workspace.LangiumDocumentFactory.fromString(
+        code,
+        URI.parse('memory:///input.dlang')
+    );
+
+    services.shared.workspace.LangiumDocuments.addDocument(document);
+
+    await services.shared.workspace.DocumentBuilder.build([document], {
+        validation: true
+    });
+
+    return document.parseResult.value as T;
+}
+
 interface FilePathData {
     destination: string,
     name: string

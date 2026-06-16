@@ -1,16 +1,29 @@
-import type { Model } from 'doc-lang-language';
+import { createDocLangServices, type Model } from 'doc-lang-language';
 // import { expandToNode, joinToNode, toString } from 'langium/generate';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { extractDestinationAndName } from './util.js';
+import { extractAstNode, extractDestinationAndName, parseModelFromString } from './util.js';
 import { astModelToDlangModel, DlangModel } from './dlangModel.js';
 import { generateGraphs, generateHeader, generateSection, stringToId } from './markdownCodeGenerator.js';
 
-export function generateMarkdown(
-    model: Model,
+import { NodeFileSystem } from 'langium/node';
+
+export async function dlangStringToMarkdown(dlang: string): Promise<string> {
+
+    const services = createDocLangServices(NodeFileSystem).DocLang;
+    const model = await parseModelFromString<Model>(dlang, services);
+
+    return modelToMarkdown(model);
+}
+
+
+export async function dlangFileToMarkdown(
     filePath: string,
     destination: string | undefined
-): string {
+): Promise<string> {
+
+    const services = createDocLangServices(NodeFileSystem).DocLang;
+    const model = await extractAstNode<Model>(filePath, services);
 
     const data = extractDestinationAndName(filePath, destination);
     const generatedFilePath = `${path.join(data.destination, data.name)}.md`;
@@ -26,7 +39,7 @@ export function generateMarkdown(
     return generatedFilePath;
 }
 
-function modelToMarkdown(model: Model): string {
+export function modelToMarkdown(model: Model): string {
 
     const dlangModel: DlangModel = astModelToDlangModel(model);
 

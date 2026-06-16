@@ -1,13 +1,7 @@
-import type { Model } from 'doc-lang-language';
-import { createDocLangServices } from 'doc-lang-language';
-
 import { Command } from 'commander';
 import chalk from 'chalk';
 
-import { extractAstNode } from './util.js';
-import { generateMarkdown } from './generator.js';
-
-import { NodeFileSystem } from 'langium/node';
+import { dlangFileToMarkdown } from './generator.js';
 
 export type GenerateOptions = {
     destination?: string;
@@ -20,11 +14,7 @@ export async function generateAction(
     try {
         console.log(chalk.blue(`Generating documentation for: ${file}...`));
 
-        const services = createDocLangServices(NodeFileSystem).DocLang;
-        const model = await extractAstNode<Model>(file, services);
-
-        const outputPath = await generateMarkdown(
-            model,
+        const outputPath = await dlangFileToMarkdown(
             file,
             options.destination
         );

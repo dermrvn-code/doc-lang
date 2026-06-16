@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "doc-lang-language": "0.0.1",
+    "doc-lang-cli": "0.0.1",
     "@codingame/monaco-vscode-editor-api": "^25.1.2",
     "@codingame/monaco-vscode-keybindings-service-override": "~25.1.2",
     "monaco-languageclient": "~10.7.0"

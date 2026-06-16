@@ -32,9 +32,17 @@
         <span>DocLang Studio</span>
       </div>
 
-      <button id="button-update">
-        Render
-      </button>
+      <div class="toolbar-right">
+
+        <div id="generation-status" class="status ready">
+          Ready
+        </div>
+
+        <button id="button-update">
+          Render
+        </button>
+
+      </div>
 
     </header>
 
@@ -49,14 +57,41 @@
       </section>
 
       <section class="panel preview-panel">
+
         <div class="panel-header">
           Markdown Preview
         </div>
 
+        <div id="preview-overlay" class="preview-overlay hidden">
+
+        <div id="overlay-loading" class="overlay-content">
+          <div class="spinner"></div>
+          <div>Generating documentation...</div>
+        </div>  
+
+        <div id="overlay-error" class="overlay-content hidden">
+          <div class="error-icon">⚠</div>
+          <div class="error-title">Generation Failed</div>
+          <div class="error-message">
+            Check the Console / Errors panel for details
+          </div>
+        </div>
+
+      </div>
+
         <div id="markdown-preview"></div>
+
       </section>
 
     </main>
+
+    <details id="console-panel" class="console-panel">
+      <summary>
+        Console / Errors
+      </summary>
+
+      <pre id="console-output"></pre>
+    </details>
 
   </body>
 </html>
