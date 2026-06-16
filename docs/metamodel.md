@@ -1,108 +1,113 @@
 ```mermaid
 classDiagram
 
-%% =========================
-%% Root
-%% =========================
+%% =======================
+%% Root Model
+%% =======================
 class Model {
-  +Element[] elements
+  Proj proj
+  Descr? desc
 }
 
-%% =========================
-%% Element hierarchy
-%% =========================
+class Proj {
+  STRING text
+}
+
+class Descr {
+  STRING text
+}
+
+Model "1" --> "1" Proj
+Model "0..1" --> Descr
+Model "1" --> "0..*" Element
+
+%% =======================
+%% Elements
+%% =======================
 class Element
 
 class Sect {
-  +String text
+  STRING text
 }
 
-class Entity{
-  +String name
-  +Description description
-  +String code
-}
+class Entity
 
 Element <|-- Sect
 Element <|-- Entity
 
-%% =========================
-%% Entity hierarchy
-%% =========================
+%% =======================
+%% Entities
+%% =======================
 class Obj {
-  +Field[] members
+  ID name
+  Description? description
+  CODE_BLOCK? code
 }
 
 class Func {
-  +Field[] params
-  +ReturnType returnType
+  ID name
+  Description? description
+  CODE_BLOCK? code
 }
 
 Entity <|-- Obj
 Entity <|-- Func
 
-%% =========================
-%% Supporting classes
-%% =========================
+%% =======================
+%% Shared Concepts
+%% =======================
 class Description {
-  +String text
+  STRING text
 }
 
 class Field {
-  +String name
-  +Type type
-  +FieldValue value
+  ID name
 }
 
-class ReturnType {
-  +Type type
-}
+Obj --> "0..1" Description
+Func --> "0..1" Description
 
-%% =========================
-%% FieldValue hierarchy
-%% =========================
+%% members / params
+Obj "1" o-- "0..*" Field : members
+Func "1" o-- "0..*" Field : params
+
+Obj --> "0..1" CODE_BLOCK
+Func --> "0..1" CODE_BLOCK
+
+%% =======================
+%% Field System
+%% =======================
 class FieldValue
-
-class Ref {
-  +Entity ref
-}
-
+class Ref
 class Literal {
-  +String value
+  value
 }
+
+Field --> "0..1" FieldValue
 
 FieldValue <|-- Ref
 FieldValue <|-- Literal
 
-%% =========================
-%% Type system
-%% =========================
-class Type
+%% reference to entities
+Ref --> Entity : ref
 
-class PrimitiveType {
-  <<enumeration>>
-  string
-  int
-  void
-}
+%% =======================
+%% Types
+%% =======================
+class Type
+class PrimitiveType
 
 Type <|-- PrimitiveType
-Type <|-- Obj
 
-%% =========================
-%% Relationships
-%% =========================
-Model "1" --> "*" Element
-Obj "1" --> "0..1" Description
-Obj "1" --> "*" Field
-Func "1" --> "0..1" Description
-Func "1" --> "*" Field
-Func "1" --> "0..1" ReturnType
+class ReturnType {
+  type
+}
 
-Field "0..1" --> Type
-Field "0..1" --> FieldValue
-ReturnType "1" --> Type
+Func --> "0..1" ReturnType
+ReturnType --> Type
 
-Ref --> Entity
+Field --> "0..1" Type
 
+%% Obj reference type (user-defined types)
+Type --> Obj : user-defined type
 ```

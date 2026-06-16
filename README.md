@@ -9,6 +9,25 @@ It includes:
 - CLI tool (```doc-lang```)
 - VS Code extension (LSP support)
 
+## Web Editor - DocLang Studio
+
+Start the web editor from the workspace root with:
+
+```bash
+npm run dev
+```
+
+This forwards to the web package and starts the Vite dev server for the browser-based editor.
+
+It normally opens at [http://localhost:20002/](http://localhost:20002/).
+
+**Usage**:
+
+Enter your code in the editor on the left, then render it with `Ctrl+S` or by clicking `Render`.
+
+The console and error log can be toggled at the bottom of the page.
+
+![Web Editor](./docs/webinterface_screenshot.png)
 ---
 
 # Build
