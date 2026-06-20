@@ -14,7 +14,9 @@ export function registerValidationChecks(services: DocLangServices) {
         Func: validator.checkFunctionHasReturnType,
         Entity: [
             validator.checkEntityNamingConvention,
-            validator.checkEntityHasEmptyLinesAround
+            validator.checkFieldsOnSeparateLines,
+            validator.checkEntityHasEmptyLinesAround,
+
         ],
         Description: validator.checkEntityDescriptionOnlyOneLine,
         Field: [
@@ -48,6 +50,26 @@ export class DocLangValidator {
                 'Entity-typed fields cannot have a value assigned.',
                 { node: field, property: 'value' }
             );
+        }
+    }
+
+    checkFieldsOnSeparateLines(entity: Entity, accept: ValidationAcceptor): void {
+        const members = 'members' in entity ? entity.members : "params" in entity ? entity.params : [];
+
+        for (let i = 1; i < members.length; i++) {
+            const prev = members[i - 1];
+            const curr = members[i];
+
+            const prevLine = prev.$cstNode?.range.start.line;
+            const currLine = curr.$cstNode?.range.start.line;
+
+            if (prevLine === currLine) {
+                accept(
+                    'error',
+                    'Fields must be declared on separate lines.',
+                    { node: curr }
+                );
+            }
         }
     }
 
