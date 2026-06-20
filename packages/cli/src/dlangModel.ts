@@ -6,6 +6,16 @@ import { Field, Func, Model, Obj, Type } from "doc-lang-language";
 
 export type EntityId = string;
 
+export type DlangEntityKind = "object" | "function";
+
+type DlangEntityBase = {
+    id: EntityId;
+    name: string;
+    description?: string;
+    kind: DlangEntityKind;
+    references: EntityId[];
+};
+
 export type DlangModel = {
     title: string;
     description?: string;
@@ -26,23 +36,20 @@ export type DlangField = {
     value?: string;
 };
 
-export type DlangEntity = {
-    id: EntityId;
-    name: string;
-    description?: string;
-    references: EntityId[];
-};
-
-export type DlangObject = DlangEntity & {
+export type DlangObject = DlangEntityBase & {
+    kind: "object";
     members: DlangField[];
     code?: string;
 };
 
-export type DlangFunction = DlangEntity & {
+export type DlangFunction = DlangEntityBase & {
+    kind: "function";
     parameters: DlangField[];
     returnType?: DlangType;
     code?: string;
 };
+
+export type DlangEntity = DlangObject | DlangFunction;
 
 /* =========================
     Edge System
@@ -94,6 +101,7 @@ export function astModelToDlangModel(model: Model): DlangModel {
     const flushSection = () => {
         if (!currentSection) return;
 
+        // Skip empty sections so the generated markdown stays focused.
         if (
             currentSection.objects.length > 0 ||
             currentSection.functions.length > 0
@@ -166,21 +174,19 @@ function toObj(
     const fields = node.members.map(toField);
 
     const obj: DlangObject = {
-        ...createEntityBase(node.name, node.description?.text),
+        ...createEntityBase(node.name, node.description?.text, "object"),
+        kind: "object",
         members: fields,
         code: stripCode(node.code),
     };
 
     registerEntity(obj, dict, builder);
 
-    // ---------------------------------
-    // EDGE EXTRACTION
-    // ---------------------------------
-    collectEntityReferences(
-        obj.id,
+    // Use the full entity so the helper can update both graph edges and back-references.
+    recordLinkedEntityReferences(
+        obj,
         fields,
         "owns",
-        obj,
         builder
     );
 
@@ -200,7 +206,8 @@ function toFunc(
     const parameters = node.params.map(toField);
 
     const func: DlangFunction = {
-        ...createEntityBase(node.name, node.description?.text),
+        ...createEntityBase(node.name, node.description?.text, "function"),
+        kind: "function",
         parameters,
         returnType: resolveType(node.returnType?.type),
         code: stripCode(node.code),
@@ -208,14 +215,11 @@ function toFunc(
 
     registerEntity(func, dict, builder);
 
-    // ---------------------------------
-    // EDGE EXTRACTION
-    // ---------------------------------
-    collectEntityReferences(
-        func.id,
+    // Use the full entity so the helper can update both graph edges and back-references.
+    recordLinkedEntityReferences(
+        func,
         parameters,
         "dependsOn",
-        func,
         builder
     );
 
@@ -275,12 +279,14 @@ function createSection(title = ""): DlangSection {
 
 function createEntityBase(
     name: string,
-    description?: string
-): DlangEntity {
+    description: string | undefined,
+    kind: DlangEntityKind
+): DlangEntityBase {
     return {
         id: createEntityId(name),
         name,
         description,
+        kind,
         references: [],
     };
 }
@@ -296,24 +302,25 @@ function registerEntity(
     builder.nodes.push(entity.id);
 }
 
-function collectEntityReferences(
-    sourceId: EntityId,
+function recordLinkedEntityReferences(
+    entity: DlangEntity,
     fields: DlangField[],
     kind: DlangEdgeKind,
-    entity: DlangEntity,
     builder: GraphBuilder
 ): void {
     for (const field of fields) {
         if (field.type?.kind !== "entity") continue;
 
+        const referencedId = field.type.name;
+
+        // Store the edge and the human-facing reference in one place.
         builder.edges.push({
-            from: sourceId,
-            to: field.type.name,
+            from: entity.id,
+            to: referencedId,
             kind,
         });
 
-        // Track references for use in "See also" section
-        entity.references.push(field.type.name);
+        entity.references.push(referencedId);
     }
 }
 
