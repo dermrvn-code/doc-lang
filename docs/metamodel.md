@@ -2,24 +2,24 @@
 classDiagram
 
 %% =======================
-%% Root Model
+%% Root
 %% =======================
 class Model {
-  Proj proj
-  Descr? desc
+  proj : Proj
+  desc : Descr [0..1]
 }
 
 class Proj {
-  STRING text
+  text : STRING
 }
 
 class Descr {
-  STRING text
+  text : STRING
 }
 
-Model "1" --> "1" Proj
-Model "0..1" --> Descr
-Model "1" --> "0..*" Element
+Model --> "1" Proj
+Model --> "0..1" Descr
+Model --> "0..*" Element
 
 %% =======================
 %% Elements
@@ -27,7 +27,7 @@ Model "1" --> "0..*" Element
 class Element
 
 class Sect {
-  STRING text
+  text : STRING
 }
 
 class Entity
@@ -39,75 +39,65 @@ Element <|-- Entity
 %% Entities
 %% =======================
 class Obj {
-  ID name
-  Description? description
-  CODE_BLOCK? code
+  name : ID
+  description : Description [0..1]
+  code : CODE_BLOCK [0..1]
 }
 
 class Func {
-  ID name
-  Description? description
-  CODE_BLOCK? code
+  name : ID
+  description : Description [0..1]
+  code : CODE_BLOCK [0..1]
 }
 
 Entity <|-- Obj
 Entity <|-- Func
 
-%% =======================
-%% Shared Concepts
-%% =======================
 class Description {
-  STRING text
+  text : STRING
 }
 
+%% =======================
+%% Fields
+%% =======================
 class Field {
-  ID name
+  name : ID
+  type : Type [0..1]
+  value : Value [0..1]
 }
 
-Obj --> "0..1" Description
-Func --> "0..1" Description
-
-%% members / params
-Obj "1" o-- "0..*" Field : members
-Func "1" o-- "0..*" Field : params
-
-Obj --> "0..1" CODE_BLOCK
-Func --> "0..1" CODE_BLOCK
+Obj *-- "0..*" Field : members
+Func *-- "0..*" Field : params
 
 %% =======================
-%% Field System
+%% Return type
 %% =======================
-class FieldValue
-class Ref
-class Literal {
-  value
-}
-
-Field --> "0..1" FieldValue
-
-FieldValue <|-- Ref
-FieldValue <|-- Literal
-
-%% reference to entities
-Ref --> Entity : ref
-
-%% =======================
-%% Types
-%% =======================
-class Type
-class PrimitiveType
-
-Type <|-- PrimitiveType
-
-class ReturnType {
-  type
-}
-
+class ReturnType
 Func --> "0..1" ReturnType
 ReturnType --> Type
 
-Field --> "0..1" Type
+%% =======================
+%% Type system
+%% =======================
+class Type
 
-%% Obj reference type (user-defined types)
-Type --> Obj : user-defined type
+class PrimitiveType {
+  kind : void | string | int | boolean | float | double | long | byte | short | char
+}
+
+class EntityType
+
+Type <|-- PrimitiveType
+Type <|-- EntityType
+EntityType --> Entity : ref
+
+%% =======================
+%% Unified literal system
+%% =======================
+class Value {
+  kind : STRING | CHAR | BOOL | HEX_BYTE | BIN_BYTE | BYTE | FLOAT | DOUBLE | LONG | SHORT | INT
+  raw  : string
+}
+
+Field --> Value
 ```
