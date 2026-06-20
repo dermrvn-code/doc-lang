@@ -1,0 +1,20 @@
+Proj "Multi Section"
+Descr "Project with two sections."
+Sect "Entities"
+
+Obj Service
+"Service object."
+endpoint: string
+```
+Service service = new Service()
+```
+
+Sect "Operations"
+
+Func Start
+"Starts the service."
+service: Service
+return: void
+```
+service.start()
+```
