@@ -25,7 +25,8 @@
     "scripts": {
         "clean": "shx rm -fr *.tsbuildinfo out",
         "build": "tsc -p tsconfig.json",
-        "build:clean": "npm run clean && npm run build"
+        "build:clean": "npm run clean && npm run build",
+        "test": "vitest run --reporter=verbose"
     },
     "dependencies": {
         "doc-lang-language": "0.0.1",

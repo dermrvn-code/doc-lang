@@ -1,0 +1,10 @@
+Proj "Single Object"
+Descr "Object with a default value and a code sample."
+
+Obj User
+"Represents a system user."
+name: string
+age = 30
+```
+User user = new User()
+```

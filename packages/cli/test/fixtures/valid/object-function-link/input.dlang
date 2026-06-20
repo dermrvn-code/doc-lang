@@ -1,0 +1,18 @@
+Proj "Linked Entities"
+Descr "Object references a function and function depends on object."
+
+Obj Task
+"Task entity."
+run: Run
+```
+Task task = new Task()
+task.run()
+```
+
+Func Run
+"Runs a task."
+task: Task
+return: void
+```
+task.run()
+```

@@ -1,0 +1,9 @@
+Proj "Single Function"
+
+Func Build
+"Builds the project."
+target: string
+return: void
+```
+Build("app")
+```
