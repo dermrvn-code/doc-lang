@@ -15,6 +15,12 @@ export const definedViteConfig = defineConfig({
     base: process.env.VITE_BASE ?? './',
     build: {
         rollupOptions: {
+            external: [
+                'node:fs',
+                'node:path',
+                'node:worker_threads',
+                /langium\/lib\/node/
+            ],
             input: {
                 index: path.resolve(__dirname, 'index.html'),
             }
@@ -43,6 +49,9 @@ export const definedViteConfig = defineConfig({
                 importMetaUrlPlugin
             ]
         },
+        exclude: [
+            'langium/lib/node'
+        ],
         include: [
             'langium',
             'langium/lsp',
