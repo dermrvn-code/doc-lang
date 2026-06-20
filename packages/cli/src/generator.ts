@@ -62,8 +62,7 @@ export function modelToMarkdown(model: Model): string {
 
     markdownContent += toc +
         "\n---\n\n" +
-        generateGraphs(dlangModel.graphBuilder) +
-        sections;
+        generateGraphs(dlangModel.entities, dlangModel.graphBuilder) + sections;
 
     return markdownContent;
 }

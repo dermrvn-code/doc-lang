@@ -4,6 +4,7 @@ import {
     DlangObject,
     DlangSection,
     DlangType,
+    EntityDict,
     GraphBuilder,
 } from "./dlangModel.js";
 import { nanoid } from "nanoid";
@@ -26,12 +27,13 @@ export function generateHeader(
 }
 
 export function generateGraphs(
+    entitiesDict: EntityDict,
     graphBuilder: GraphBuilder
 ): string {
     let markdown = "## Diagrams {#diagrams}\n\n";
 
     markdown += "### Class Diagram {#class-diagram}\n\n";
-    markdown += "> TODO: Add class diagram here\n\n";
+    markdown += generateClassDiagramMermaidGraph(entitiesDict, graphBuilder);
 
     markdown += "### Dependency Diagram {#dependency-diagram}\n\n";
     markdown += generateDependencyMermaidGraph(graphBuilder);
@@ -92,6 +94,63 @@ export function generateDependencyMermaidGraph(
     }
 
     return mermaid + "```\n";
+}
+
+export function generateClassDiagramMermaidGraph(
+    entitiesDict: EntityDict,
+    graphBuilder: GraphBuilder,
+): string {
+    let mermaid = "```mermaid\n";
+    mermaid += "classDiagram\n";
+    mermaid += "direction LR\n\n";
+
+    for (const [, entity] of entitiesDict) {
+        if (!("members" in entity)) continue;
+
+        const object = entity as DlangObject;
+        mermaid += `class ${object.name} {\n`;
+
+        for (const member of object.members) {
+            const type = member.type;
+
+            if (type?.kind === "unknown") continue;
+
+            // Function member
+            if (type?.kind === "entity") {
+                const referenced = entitiesDict.get(type.name);
+
+                if (referenced && "parameters" in referenced) {
+                    const func = referenced as DlangFunction;
+                    const returnType =
+                        func.returnType?.kind !== "unknown"
+                            ? func.returnType?.name
+                            : "void";
+
+                    mermaid += `  ${returnType} ${member.name}: ${type.name}\n`;
+                    continue;
+                }
+            }
+
+            // Field member
+            let line = "  ";
+
+            if (type?.name) {
+                line += `${type.name} `;
+            }
+
+            line += member.name;
+
+            if (member.value !== undefined) {
+                line += ` = ${member.value}`;
+            }
+
+            mermaid += `${line}\n`;
+        }
+
+        mermaid += "}\n\n";
+    }
+
+    return `${mermaid}\`\`\`\n`;
 }
 
 export function generateSection(

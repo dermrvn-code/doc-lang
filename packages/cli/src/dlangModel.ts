@@ -10,6 +10,7 @@ export type DlangModel = {
     title: string;
     description?: string;
     sections: DlangSection[];
+    entities: EntityDict;
     graphBuilder: GraphBuilder;
 };
 
@@ -75,7 +76,7 @@ export type DlangType =
    Entity Registry
 ========================= */
 
-type EntityDict = Map<EntityId, DlangEntity>;
+export type EntityDict = Map<EntityId, DlangEntity>;
 
 /* =========================
    Entry Point
@@ -139,6 +140,7 @@ export function astModelToDlangModel(model: Model): DlangModel {
         title: model.proj.text,
         description: model.desc?.text,
         sections,
+        entities,
         graphBuilder,
     };
 }
