@@ -58,9 +58,9 @@ Field:
         ':' type=Type
     )?
     (
-        '=' value=(STRING | INT)
-    )?;
-
+        '=' value=Value
+    )?
+;
 
 /* -------------------- Types -------------------- */
 
@@ -68,19 +68,46 @@ Type:
     PrimitiveType | EntityType;
 
 PrimitiveType:
-    primitive=('string' | 'int' | 'void');
+    primitive=('void' | 'string' | 'int' | 'boolean' | 'float' | 'double' |  'long' | 'byte' | 'short' | 'char');
 
 EntityType:
     ref=[Entity:ID];
 
+/* -------------------- Values -------------------- */
+
+Value returns string:
+    STRING
+    | CHAR
+    | BOOL
+    | HEX_BYTE
+    | BIN_BYTE
+    | BYTE
+    | FLOAT
+    | DOUBLE
+    | LONG
+    | SHORT
+    | INT
+;
 
 /* -------------------- Terminals -------------------- */
+terminal STRING: /"[^"]*"/;
+terminal CHAR: /'.'/;
+
+terminal BOOL: 'true' | 'false';
+
+terminal HEX_BYTE: /0[xX][0-9a-fA-F]+/;
+terminal BIN_BYTE: /0[bB][01]+/;
+terminal BYTE: /[0-9]+b/;
+
+terminal FLOAT: /[0-9]+\.[0-9]+f/;
+terminal DOUBLE: /[0-9]+\.[0-9]+/;
+terminal LONG: /[0-9]+L/;
+terminal SHORT: /[0-9]+s/;
+terminal INT: /[0-9]+/;
 
 terminal ID: /[_a-zA-Z][\w_]*/;
-terminal INT: /[0-9]+/;
-terminal STRING: /"[^"]*"/;
-terminal CODE_BLOCK: /```[^`]*```/;
 
+terminal CODE_BLOCK: /```[^`]*```/;
 
 /* -------------------- Hidden tokens -------------------- */
 
