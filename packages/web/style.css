@@ -405,6 +405,44 @@ body {
   gap: 12px;
 }
 
+.toolbar-right button#button-save {
+  min-width: 72px;
+}
+
+/* Secondary (ghost) style for less-prominent actions like Save */
+.topbar button.secondary {
+  background: transparent;
+  color: var(--accent);
+  box-shadow: none;
+  border: 1px solid rgba(55, 148, 255, 0.18);
+  backdrop-filter: none;
+}
+
+.topbar button.secondary:hover {
+  background: rgba(55, 148, 255, 0.06);
+  box-shadow: 0 6px 12px rgba(55, 148, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+.topbar button.secondary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.topbar button.secondary:focus-visible {
+  outline: 2px solid rgba(55, 148, 255, 0.24);
+  outline-offset: 2px;
+}
+
+/* Center the generation status in the topbar */
+.topbar > #generation-status {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+}
+
 .status {
   font-size: 12px;
   font-weight: 600;

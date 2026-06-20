@@ -166,6 +166,21 @@ const update = () => {
   void updateMarkdown();
 };
 
+const downloadMarkdown = async () => {
+  const code = getCurrentCode();
+  const finalMD = await dlangStringToMarkdown(code);
+  const blob = new Blob([finalMD], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = 'documentation.md';
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+};
+
 const handleKeyDown = (e: KeyboardEvent) => {
   const isSave =
     (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s";
@@ -189,6 +204,12 @@ export const runDsl = async () => {
     document
       .getElementById("button-update")
       ?.addEventListener("click", update);
+
+    document
+      .getElementById("button-save")
+      ?.addEventListener("click", () => {
+        void downloadMarkdown();
+      });
 
     window.addEventListener("keydown", handleKeyDown, true);
 
