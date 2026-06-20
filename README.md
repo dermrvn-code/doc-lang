@@ -1,135 +1,136 @@
-# Doc-Lang Project
+<div align="center">
 
-## Quick Start
+# DocLang
 
-This project provides a DSL toolchain for parsing, validating, and generating outputs from ```.dlang``` files.
+**A modern document language for structured content generation**
 
-It includes:
-- Langium-based language implementation
-- CLI tool (```doc-lang```)
-- VS Code extension (LSP support)
+Transform `.dlang` files into rich output using a powerful language server, CLI, and browser-based editor.
 
-## Web Editor - DocLang Studio
+<br>
 
-Start the web editor from the workspace root with:
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6)]()
+[![Langium](https://img.shields.io/badge/Langium-Powered-7C3AED)]()
+[![VS Code](https://img.shields.io/badge/VS_Code-Extension-007ACC)]()
+[![License](https://img.shields.io/badge/License-MIT-green)]()
+
+<br>
+
+[Overview](#-overview) • [Studio](#-doclang-studio) • [Quick Start](#-quick-start) • [VS Code](#-vs-code-extension) • [CLI](#-cli)
+
+</div>
+
+---
+
+## ✨ Overview
+
+DocLang is a domain-specific language for creating structured documents with a modern authoring experience.
+
+<br>
+
+### Features
+
+* ⚡ Langium-powered language infrastructure
+* 🖥️ Browser-based editor (**DocLang Studio**)
+* 🧩 VS Code extension with LSP support
+* ⚙️ CLI tooling for automation
+* ✅ Validation, diagnostics, and code intelligence
+
+---
+
+## 📸 DocLang Studio
+
+Write, validate, and render `.dlang` documents directly in your browser.
+
+<br>
+
+<p align="center">
+  <img src="./docs/webinterface_screenshot.png" alt="DocLang Studio" width="90%">
+</p>
+
+<br>
+
+---
+
+## 🚀 Quick Start
+
+### Start the Web Editor
 
 ```bash
 npm run dev
 ```
 
-This forwards to the web package and starts the Vite dev server for the browser-based editor.
+The editor is available at:
 
-It normally opens at [http://localhost:20002/](http://localhost:20002/).
+```text
+http://localhost:20002
+```
 
-**Usage**:
-
-Enter your code in the editor on the left, then render it with `Ctrl+S` or by clicking `Render`.
-
-The console and error log can be toggled at the bottom of the page.
-
-![Web Editor](./docs/webinterface_screenshot.png)
----
-
-# Build
-
-To build the project, follow these steps:
-
-**Step 1: Generate Langium artifacts**
+### Build the Project
 
 ```bash
 npm run langium:generate
-```
-
-**Step 2: Compile TypeScript and build packages**
-
-```bash
 npm run build
 ```
 
-**Step 3: Package the VS Code extension**
+---
+
+## 🧩 VS Code Extension
+
+Package the extension:
 
 ```bash
 cd packages/extension
 vsce package --allow-missing-repository
 ```
 
-**Step 4: Install the VS Code extension**
+Install it:
 
 ```bash
 code --install-extension ./vscode-doc-lang-0.0.1.vsix
 ```
 
-
 ---
 
-# VS Code Extension
+## ⚡ CLI
 
-After building:
-
-1. Reload VS Code window
-2. Open a ```.dlang``` file
-3. LSP features will be available:
-   - diagnostics
-   - references
-   - completion (if implemented)
-
----
-
-# CLI Usage
-
-The CLI allows you to process ```.dlang``` files from the terminal.
-
-## 1. Install CLI globally (recommended for development)
-
-From the project root:
+Install globally:
 
 ```bash
 cd packages/cli
 npm link
 ```
 
-This registers the CLI globally as:
-
-```bash
-doc-lang
-```
-
-### Example usage:
+Generate output:
 
 ```bash
 doc-lang generate examples/first-example.dlang
 ```
 
----
-
-## 2. Remove CLI link (if needed)
-
-```bash
-cd packages/cli
-npm unlink -g
-```
-
----
-
-## 3. Direct usage without linking (no install required)
-
-You can also run the CLI directly via Node:
+Run without installation:
 
 ```bash
 node packages/cli/bin/cli.js generate examples/first-example.dlang
 ```
 
-This is useful for:
-- debugging
-- CI environments
-- verifying build output
+---
+
+## 📦 Project Structure
+
+```text
+packages/
+├── cli/
+├── extension/
+├── language/
+└── web/
+```
 
 ---
 
-## 4. Build required before CLI usage
+## 🏗️ Technology Stack
 
-If you use either method above, ensure the project is built first:
+* Langium
+* TypeScript
+* Node.js
+* Vite
+* VS Code Language Server Protocol
 
-```bash
-npm run build
-```
