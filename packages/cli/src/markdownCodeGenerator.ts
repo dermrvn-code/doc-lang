@@ -150,6 +150,23 @@ export function generateClassDiagramMermaidGraph(
         mermaid += "}\n\n";
     }
 
+    for (const edge of graphBuilder.edges) {
+        const fromEntity = entitiesDict.get(edge.from);
+        const toEntity = entitiesDict.get(edge.to);
+
+        if (!fromEntity || !toEntity) continue;
+
+        if (fromEntity.id === toEntity.id) continue; // Skip self-referencing edges
+
+        if (!("members" in fromEntity) || !("members" in toEntity)) continue; // Skip if either is not an object
+
+        const fromName = fromEntity.name;
+        const toName = toEntity.name;
+        let relation = "-->";
+
+        mermaid += `${fromName} ${relation} ${toName}\n`;
+    }
+
     return `${mermaid}\`\`\`\n`;
 }
 
