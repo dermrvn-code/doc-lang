@@ -32,12 +32,33 @@ The console and error log can be toggled at the bottom of the page.
 
 # Build
 
-Run `build.bat` to compile the project:
+To build the project, follow these steps:
+
+**Step 1: Generate Langium artifacts**
 
 ```bash
-build.bat
+npm run langium:generate
 ```
-This script compiles all TypeScript source code, generates and installs the VS Code extension.
+
+**Step 2: Compile TypeScript and build packages**
+
+```bash
+npm run build
+```
+
+**Step 3: Package the VS Code extension**
+
+```bash
+cd packages/extension
+vsce package --allow-missing-repository
+```
+
+**Step 4: Install the VS Code extension**
+
+```bash
+code --install-extension ./vscode-doc-lang-0.0.1.vsix
+```
+
 
 ---
 
