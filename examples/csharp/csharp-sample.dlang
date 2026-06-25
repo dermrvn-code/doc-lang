@@ -1,0 +1,41 @@
+Proj "C# Example"
+Descr "A compact C# example showing `Person` and `Account` objects linked together, multiple field types, and simple functions."
+
+Sect "Overview"
+
+Obj Person
+"Represents a person with mixed primitive fields."
+name: string
+id: int
+active: boolean
+balance: double
+```
+var alice = new Person { Name = "Alice", Id = 1, Active = true, Balance = 100.5 };
+```
+
+Obj Account
+"Bank account linked to a `Person` (demonstrates object linking)."
+owner: Person
+number: string
+openedTicks: long
+balance: double
+```
+var account = new Account { Owner = alice, Number = "ABC-123", OpenedTicks = DateTime.UtcNow.Ticks, Balance = 250.0 };
+```
+
+Func CreateAccount
+"Creates an `Account` for a given `Person` with an initial deposit."
+owner: Person
+initialDeposit: double
+return: Account
+```
+var account = Bank.CreateAccount(alice, 250.0);
+```
+
+Func Greet
+"Returns a greeting for a `Person`."
+person: Person
+return: string
+```
+Bank.Greet(alice)
+```
