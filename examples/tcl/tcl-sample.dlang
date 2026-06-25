@@ -1,0 +1,44 @@
+Proj "Tcl Example"
+Descr "Simplified Tcl sample focusing on interlinked `Logger` and `Backend` objects and functions that operate on them. Shows multiple field types and object links."
+
+Sect "Overview"
+
+Obj Logger
+"Core logging component with several field types and example tags list."
+name: string
+id: int
+level: string
+enabled: boolean
+tags: string
+```
+set logger [dict create name "app-logger" id 1 level "INFO" enabled 1 tags "core,audit"]
+```
+
+Obj Backend
+"Backend container that links to a `Logger`."
+name: string
+logger: Logger
+port: int
+secure: boolean
+```
+set backend [dict create name "main-backend" logger_id [dict get $logger id] port 8080 secure 0]
+```
+
+Func Log
+"Logs a message using a `Logger` object."
+logger: Logger
+message: string
+level: string
+return: void
+```
+::app::log $::app::logger "Initializing" "INFO"
+```
+
+Func StartBackend
+"Starts a backend and emits a startup log via its linked logger."
+backend: Backend
+logger: Logger
+return: void
+```
+::app::start_backend $::app::backend $::app::logger
+```
