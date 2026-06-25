@@ -114,6 +114,12 @@ node packages/cli/bin/cli.js generate examples/first-example.dlang
 
 ---
 
+## 📝 Examples
+
+For examples, also including source code, from which the .dlang files are derived, see the [examples](./examples) folder.
+
+---
+
 ## 📦 Project Structure
 
 ```text
