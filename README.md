@@ -53,6 +53,20 @@ Write, validate, and render `.dlang` documents directly in your browser.
 
 ## 🚀 Quick Start
 
+### Install Dependencies
+
+When first cloning the repository, install the dependencies:
+```bash
+npm install
+```
+
+### Build the Project
+
+```bash
+npm run langium:generate
+npm run build
+```
+
 ### Start the Web Editor
 
 ```bash
@@ -64,14 +78,6 @@ The editor is available at:
 ```text
 http://localhost:20002
 ```
-
-### Build the Project
-
-```bash
-npm run langium:generate
-npm run build
-```
-
 ---
 
 ## 🧩 VS Code Extension
