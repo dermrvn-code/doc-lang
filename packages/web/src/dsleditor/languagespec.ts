@@ -1,4 +1,4 @@
-import exampleCode from '../../../../examples/first-example.dlang?raw';
+import exampleCode from '../../../../examples/generic/first-example.dlang?raw';
 
 export const languageId = 'doc-lang';
 export const dslExtension = '.dlang';
