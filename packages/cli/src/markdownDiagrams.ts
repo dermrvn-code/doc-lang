@@ -228,6 +228,9 @@ function findCyclicEdgeIds(graphBuilder: GraphBuilder): Array<{ from: string; to
 
 function getDependencyRelation(kind: DlangEdgeKind): string {
     switch (kind) {
+        case "owns":
+            return '-->|"owns"|';
+
         case "references":
             return '-->|"references"|';
 

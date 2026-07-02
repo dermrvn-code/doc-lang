@@ -10,6 +10,21 @@ const validFixtureRoot = path.resolve(__dirname, 'fixtures', 'valid');
 const fixturePairs = findFixturePairs(validFixtureRoot);
 
 describe('CLI markdown generation fixtures', () => {
+    test('marks comp keyword as ownership in dependency graph', async () => {
+        const input = `
+            Proj "X"
+
+            Obj Parent
+            comp child: Child
+
+            Obj Child
+        `;
+
+        const markdown = await dlangStringToMarkdown(input);
+
+        expect(markdown).toContain('-->|"owns"|');
+    });
+
     test('highlights nodes involved in cyclic dependencies', () => {
         const graphBuilder: GraphBuilder = {
             nodes: ['A', 'B', 'C'],

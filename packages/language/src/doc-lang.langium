@@ -54,6 +54,7 @@ ReturnType:
 /* -------------------- Field System -------------------- */
 
 Field:
+    (isOwnership?='comp')?
     name=ID (
         ':' type=Type
     )?
