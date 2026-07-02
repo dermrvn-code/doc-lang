@@ -152,7 +152,10 @@ export class DocLangValidator {
 
     // Helper methods for validation checks
     _checkCamelCaseString(value: string, isLowerCamelCase: boolean = false): boolean {
-        const camelCasePattern = isLowerCamelCase ? /^[a-z]+([A-Z][a-z]*)*$/ : /^[A-Z][a-zA-Z]*$/;
+        const camelCasePattern = isLowerCamelCase
+            ? /^[a-z]+(?:[A-Z][a-z0-9]*)*(?:[0-9]+)?$/
+            : /^[A-Z][a-zA-Z0-9]*$/;
+
         return camelCasePattern.test(value);
     }
 

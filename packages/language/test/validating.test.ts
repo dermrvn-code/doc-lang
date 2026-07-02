@@ -150,6 +150,21 @@ describe("Naming conventions", () => {
 
         expect(namingIssues).toHaveLength(0);
     });
+
+    test("lowerCamelCase allows trailing digits", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj Test
+            logger1: string
+        `);
+
+        const namingIssues = diags.filter(d =>
+            d.message.includes("camelCase")
+        );
+
+        expect(namingIssues).toHaveLength(0);
+    });
 });
 
 /* -------------------------------------------------
