@@ -187,7 +187,7 @@ describe('Parser tests', () => {
         expect(checkDocumentValid(document)).toBeUndefined();
 
         const obj = document.parseResult.value.elements[0] as Obj;
-        expect(obj.members[0].value).toBe(42);
+        expect(obj.members[0].value).toBe("42");
     });
 
     test('parses code block on object', async () => {

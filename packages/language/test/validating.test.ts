@@ -150,6 +150,21 @@ describe("Naming conventions", () => {
 
         expect(namingIssues).toHaveLength(0);
     });
+
+    test("lowerCamelCase allows trailing digits", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj Test
+            logger1: string
+        `);
+
+        const namingIssues = diags.filter(d =>
+            d.message.includes("camelCase")
+        );
+
+        expect(namingIssues).toHaveLength(0);
+    });
 });
 
 /* -------------------------------------------------
@@ -244,6 +259,33 @@ describe("Field type/value consistency", () => {
         `);
 
         expect(hasDiagnostic(diags, "Entity-typed fields cannot have a value assigned.")).toBe(false);
+    });
+
+    test("comp is only allowed for object references", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj Test
+            comp name: string
+
+            Func Helper
+            comp value: string
+        `);
+
+        expect(hasDiagnostic(diags, "The comp modifier is only allowed for object references to other entities.")).toBe(true);
+    });
+
+    test("comp on object entity reference is valid", async () => {
+        const diags = await validate(`
+            Proj "X"
+
+            Obj Parent
+            comp child: Child
+
+            Obj Child
+        `);
+
+        expect(hasDiagnostic(diags, "The comp modifier is only allowed for object references to other entities.")).toBe(false);
     });
 
     test("missing type with value is allowed", async () => {

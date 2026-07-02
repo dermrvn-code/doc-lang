@@ -21,7 +21,8 @@ export function registerValidationChecks(services: DocLangServices) {
         Description: validator.checkEntityDescriptionOnlyOneLine,
         Field: [
             validator.checkFieldNamingConvention,
-            validator.checkFieldTypeValueConsistency
+            validator.checkFieldTypeValueConsistency,
+            validator.checkOwnershipModifierUsage
         ]
     };
     registry.register(checks, validator);
@@ -49,6 +50,25 @@ export class DocLangValidator {
                 'error',
                 'Entity-typed fields cannot have a value assigned.',
                 { node: field, property: 'value' }
+            );
+        }
+    }
+
+    checkOwnershipModifierUsage(field: Field, accept: ValidationAcceptor): void {
+        if (!field.isOwnership) {
+            return;
+        }
+
+        const container = field.$container;
+        const type = field.type;
+        const isEntityReference = type?.$type === 'EntityType';
+        const isObjectMember = container?.$type === 'Obj';
+
+        if (!isEntityReference || !isObjectMember) {
+            accept(
+                'error',
+                'The comp modifier is only allowed for object references to other entities.',
+                { node: field, property: 'isOwnership' }
             );
         }
     }
@@ -152,7 +172,10 @@ export class DocLangValidator {
 
     // Helper methods for validation checks
     _checkCamelCaseString(value: string, isLowerCamelCase: boolean = false): boolean {
-        const camelCasePattern = isLowerCamelCase ? /^[a-z]+([A-Z][a-z]*)*$/ : /^[A-Z][a-zA-Z]*$/;
+        const camelCasePattern = isLowerCamelCase
+            ? /^[a-z]+(?:[A-Z][a-z0-9]*)*(?:[0-9]+)?$/
+            : /^[A-Z][a-zA-Z0-9]*$/;
+
         return camelCasePattern.test(value);
     }
 

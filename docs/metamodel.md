@@ -40,13 +40,11 @@ Element <|-- Entity
 %% =======================
 class Obj {
   name : ID
-  description : Description [0..1]
   code : CODE_BLOCK [0..1]
 }
 
 class Func {
   name : ID
-  description : Description [0..1]
   code : CODE_BLOCK [0..1]
 }
 
@@ -57,47 +55,71 @@ class Description {
   text : STRING
 }
 
+Obj --> "0..1" Description
+Func --> "0..1" Description
+
 %% =======================
-%% Fields
+%% Members / Parameters
 %% =======================
 class Field {
+  isOwnership : Boolean
   name : ID
-  type : Type [0..1]
-  value : Value [0..1]
 }
 
 Obj *-- "0..*" Field : members
 Func *-- "0..*" Field : params
 
+Field --> "0..1" Type
+Field --> "0..1" Value
+
 %% =======================
-%% Return type
+%% Return Type
 %% =======================
 class ReturnType
+
 Func --> "0..1" ReturnType
 ReturnType --> Type
 
 %% =======================
-%% Type system
+%% Type System
 %% =======================
 class Type
 
 class PrimitiveType {
-  kind : void | string | int | boolean | float | double | long | byte | short | char
+  primitive :
+  void | string | int | boolean | float |
+  double | long | byte | short | char
 }
 
 class EntityType
 
 Type <|-- PrimitiveType
 Type <|-- EntityType
+
 EntityType --> Entity : ref
 
 %% =======================
-%% Unified literal system
+%% Literal Values
 %% =======================
 class Value {
-  kind : STRING | CHAR | BOOL | HEX_BYTE | BIN_BYTE | BYTE | FLOAT | DOUBLE | LONG | SHORT | INT
-  raw  : string
+  kind : LiteralKind
+  raw : string
 }
 
-Field --> Value
+class LiteralKind {
+  <<enumeration>>
+  STRING
+  CHAR
+  BOOL
+  HEX_BYTE
+  BIN_BYTE
+  BYTE
+  FLOAT
+  DOUBLE
+  LONG
+  SHORT
+  INT
+}
+
+Value --> LiteralKind
 ```

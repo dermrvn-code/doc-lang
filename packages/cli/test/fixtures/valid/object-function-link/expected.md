@@ -32,8 +32,11 @@ graph LR
 task["Task"]
 run["Run"]
 
-task -->|"owns"| run
+task -->|"references"| run
 run -->|"depends on"| task
+
+linkStyle 0 stroke:#f44336,stroke-width:4px;
+linkStyle 1 stroke:#f44336,stroke-width:4px;
 ```
 
 ---

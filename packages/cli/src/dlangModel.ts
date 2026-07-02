@@ -32,6 +32,7 @@ export type DlangSection = {
 
 export type DlangField = {
     name: string;
+    isOwnership?: boolean;
     type?: DlangType;
     value?: string;
 };
@@ -56,8 +57,9 @@ export type DlangEntity = DlangObject | DlangFunction;
 ========================= */
 
 export type DlangEdgeKind =
-    | "owns"
-    | "dependsOn";
+    | "references"
+    | "dependsOn"
+    | "owns";
 
 export type DlangEdge = {
     from: EntityId;
@@ -186,7 +188,7 @@ function toObj(
     recordLinkedEntityReferences(
         obj,
         fields,
-        "owns",
+        "references",
         builder
     );
 
@@ -234,6 +236,7 @@ function toFunc(
 function toField(node: Field): DlangField {
     return {
         name: node.name,
+        isOwnership: node.isOwnership,
         type: resolveType(node.type),
         value: node.value,
     };
@@ -313,11 +316,13 @@ function recordLinkedEntityReferences(
 
         const referencedId = field.type.name;
 
+        const edgeKind: DlangEdgeKind = field.isOwnership ? "owns" : kind;
+
         // Store the edge and the human-facing reference in one place.
         builder.edges.push({
             from: entity.id,
             to: referencedId,
-            kind,
+            kind: edgeKind,
         });
 
         entity.references.push(referencedId);
