@@ -56,7 +56,7 @@ export type DlangEntity = DlangObject | DlangFunction;
 ========================= */
 
 export type DlangEdgeKind =
-    | "owns"
+    | "references"
     | "dependsOn";
 
 export type DlangEdge = {
@@ -186,7 +186,7 @@ function toObj(
     recordLinkedEntityReferences(
         obj,
         fields,
-        "owns",
+        "references",
         builder
     );
 

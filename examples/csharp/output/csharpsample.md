@@ -46,7 +46,7 @@ account["Account"]
 createaccount["CreateAccount"]
 greet["Greet"]
 
-account -->|"owns"| person
+account -->|"references"| person
 createaccount -->|"depends on"| person
 greet -->|"depends on"| person
 ```

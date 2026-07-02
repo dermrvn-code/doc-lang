@@ -32,7 +32,7 @@ graph LR
 task["Task"]
 run["Run"]
 
-task -->|"owns"| run
+task -->|"references"| run
 run -->|"depends on"| task
 ```
 

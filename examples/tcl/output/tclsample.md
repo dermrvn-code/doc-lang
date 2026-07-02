@@ -47,7 +47,7 @@ backend["Backend"]
 log["Log"]
 startbackend["StartBackend"]
 
-backend -->|"owns"| logger
+backend -->|"references"| logger
 log -->|"depends on"| logger
 startbackend -->|"depends on"| backend
 startbackend -->|"depends on"| logger

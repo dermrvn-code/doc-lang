@@ -41,8 +41,8 @@ logger["Logger"]
 backend["Backend"]
 log["Log"]
 
-logger -->|"owns"| log
-backend -->|"owns"| logger
+logger -->|"references"| log
+backend -->|"references"| logger
 ```
 
 ---
