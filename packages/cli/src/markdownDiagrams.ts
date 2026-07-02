@@ -37,12 +37,9 @@ export function generateDependencyMermaidGraph(
     let mermaid = "```mermaid\n";
     mermaid += "graph LR\n\n";
 
-    const connectedNodes = new Set<string>();
-
-    for (const edge of graphBuilder.edges) {
-        connectedNodes.add(edge.from);
-        connectedNodes.add(edge.to);
-    }
+    const connectedNodes = new Set(
+        graphBuilder.edges.flatMap(({ from, to }) => [from, to])
+    );
 
     const looseNodeIds: string[] = [];
 
