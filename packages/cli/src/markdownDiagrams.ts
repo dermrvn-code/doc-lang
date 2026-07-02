@@ -41,6 +41,9 @@ export function generateDependencyMermaidGraph(
         graphBuilder.edges.flatMap(({ from, to }) => [from, to])
     );
 
+    const cyclicEdgeIds = new Set(
+        findCyclicEdgeIds(graphBuilder).map(({ from, to }) => `${stringToId(from)}-${stringToId(to)}`)
+    );
     const looseNodeIds: string[] = [];
 
     for (const node of graphBuilder.nodes) {
@@ -55,11 +58,19 @@ export function generateDependencyMermaidGraph(
 
     mermaid += "\n";
 
-    for (const edge of graphBuilder.edges) {
+    const edgeStyles: string[] = [];
+
+    for (const [index, edge] of graphBuilder.edges.entries()) {
         const fromId = stringToId(edge.from);
         const toId = stringToId(edge.to);
+        const edgeId = `${fromId}-${toId}`;
+        const edgeLabel = getDependencyRelation(edge.kind);
 
-        mermaid += `${fromId} ${getDependencyRelation(edge.kind)} ${toId}\n`;
+        mermaid += `${fromId} ${edgeLabel} ${toId}\n`;
+
+        if (cyclicEdgeIds.has(edgeId)) {
+            edgeStyles.push(`linkStyle ${index} stroke:#f44336,stroke-width:4px;`);
+        }
     }
 
     // Highlight loose nodes so isolated entities are easy to spot in the graph.
@@ -68,6 +79,11 @@ export function generateDependencyMermaidGraph(
         mermaid +=
             "classDef loose fill:#ffebee,stroke:#f44336,stroke-width:4px;\n";
         mermaid += `class ${looseNodeIds.join(",")} loose;\n`;
+    }
+
+    if (edgeStyles.length > 0) {
+        mermaid += "\n";
+        mermaid += `${edgeStyles.join("\n")}\n`;
     }
 
     return mermaid + "```\n";
@@ -150,6 +166,64 @@ function isObjectEntity(entity: DlangEntity | undefined): entity is DlangObject 
 
 function isFunctionEntity(entity: DlangEntity | undefined): entity is DlangFunction {
     return entity?.kind === "function";
+}
+
+function findCyclicEdgeIds(graphBuilder: GraphBuilder): Array<{ from: string; to: string }> {
+    const adjacency = new Map<string, string[]>();
+
+    for (const node of graphBuilder.nodes) {
+        adjacency.set(node, []);
+    }
+
+    for (const edge of graphBuilder.edges) {
+        adjacency.get(edge.from)?.push(edge.to);
+    }
+
+    const visited = new Set<string>();
+    const activePath = new Set<string>();
+    const currentPath: string[] = [];
+    const cyclicEdges = new Set<string>();
+
+    const visit = (node: string): void => {
+        visited.add(node);
+        activePath.add(node);
+        currentPath.push(node);
+
+        for (const neighbor of adjacency.get(node) ?? []) {
+            const edgeKey = `${node}:${neighbor}`;
+
+            if (activePath.has(neighbor)) {
+                const cycleStartIndex = currentPath.indexOf(neighbor);
+
+                for (let i = cycleStartIndex; i < currentPath.length - 1; i += 1) {
+                    const from = currentPath[i];
+                    const to = currentPath[i + 1];
+                    cyclicEdges.add(`${from}:${to}`);
+                }
+
+                cyclicEdges.add(edgeKey);
+                continue;
+            }
+
+            if (!visited.has(neighbor)) {
+                visit(neighbor);
+            }
+        }
+
+        currentPath.pop();
+        activePath.delete(node);
+    };
+
+    for (const node of graphBuilder.nodes) {
+        if (!visited.has(node)) {
+            visit(node);
+        }
+    }
+
+    return [...cyclicEdges].map(edgeId => {
+        const [from, to] = edgeId.split(':');
+        return { from, to };
+    });
 }
 
 function getDependencyRelation(kind: DlangEdgeKind): string {

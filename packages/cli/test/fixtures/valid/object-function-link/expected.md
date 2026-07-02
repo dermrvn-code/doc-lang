@@ -34,6 +34,9 @@ run["Run"]
 
 task -->|"references"| run
 run -->|"depends on"| task
+
+linkStyle 0 stroke:#f44336,stroke-width:4px;
+linkStyle 1 stroke:#f44336,stroke-width:4px;
 ```
 
 ---
